@@ -12,6 +12,7 @@
   "dependencies": {
     "@poise-ui/motion": "workspace:*",
     "@poise-ui/shared": "workspace:*",
+    "@poise-ui/variants": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "motion": "^13.1.0"
   },

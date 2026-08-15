@@ -1,17 +1,13 @@
 {
-  "name": "@poise-ui/web",
+  "name": "@poise-ui/variants",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "exports": {
-    "./button": "./src/button/poise-button.ts"
+    "./button": "./src/button.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@poise-ui/shared": "workspace:*",
-    "@poise-ui/variants": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^7.0.2"

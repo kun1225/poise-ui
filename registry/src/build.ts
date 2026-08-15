@@ -22,6 +22,7 @@ const HOMEPAGE = "https://poise-ui.dev";
 const CANONICAL_IMPORTS: Record<string, string> = {
   "@poise-ui/shared": "@/lib/utils",
   "@poise-ui/motion": "@/lib/motion",
+  "@poise-ui/variants/button": "@/lib/button-variants",
 };
 
 function toCanonicalImports(source: string) {

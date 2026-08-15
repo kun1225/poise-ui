@@ -1,19 +1,21 @@
 /*
  * Layer 1 — raw custom properties.
- * Framework-agnostic and inherited into shadow DOM, so Lit components
- * consume these directly via var(). Never reference Tailwind here.
+ * Framework-agnostic, so anything can consume them directly via var().
+ * Never reference Tailwind here.
  */
 :root {
+  /* Neutrals are Tailwind's `neutral` scale verbatim - chroma 0, no hue cast. */
   --poise-color-bg: oklch(1 0 0);
-  --poise-color-fg: oklch(0.21 0.006 285.9);
-  --poise-color-muted: oklch(0.967 0.001 286.4);
-  --poise-color-muted-fg: oklch(0.552 0.016 285.9);
-  --poise-color-border: oklch(0.92 0.004 286.3);
-  --poise-color-accent: oklch(0.55 0.22 264);
+  --poise-color-fg: oklch(0.205 0 0);
+  --poise-color-muted: oklch(0.97 0 0);
+  --poise-color-muted-fg: oklch(0.556 0 0);
+  --poise-color-border: oklch(0.922 0 0);
+  /* Accents stay in Morandi territory: chroma under 0.1, dusty rather than vivid. */
+  --poise-color-accent: oklch(0.52 0.055 245);
   --poise-color-accent-fg: oklch(0.985 0 0);
-  --poise-color-danger: oklch(0.58 0.23 27.3);
+  --poise-color-danger: oklch(0.52 0.09 30);
   --poise-color-danger-fg: oklch(0.985 0 0);
-  --poise-color-ring: oklch(0.55 0.22 264);
+  --poise-color-ring: oklch(0.52 0.055 245);
 
   --poise-radius-sm: 0.375rem;
   --poise-radius-md: 0.5rem;
@@ -25,16 +27,17 @@
 }
 
 .dark {
-  --poise-color-bg: oklch(0.141 0.005 285.8);
+  --poise-color-bg: oklch(0.145 0 0);
   --poise-color-fg: oklch(0.985 0 0);
-  --poise-color-muted: oklch(0.274 0.006 286.0);
-  --poise-color-muted-fg: oklch(0.705 0.015 286.1);
-  --poise-color-border: oklch(0.274 0.006 286.0);
-  --poise-color-accent: oklch(0.62 0.19 264);
-  --poise-color-accent-fg: oklch(0.141 0.005 285.8);
-  --poise-color-danger: oklch(0.64 0.21 25.3);
-  --poise-color-danger-fg: oklch(0.985 0 0);
-  --poise-color-ring: oklch(0.62 0.19 264);
+  --poise-color-muted: oklch(0.269 0 0);
+  --poise-color-muted-fg: oklch(0.708 0 0);
+  --poise-color-border: oklch(0.269 0 0);
+  /* Lifted for contrast on the dark ground; the dark foreground keeps it readable. */
+  --poise-color-accent: oklch(0.72 0.05 245);
+  --poise-color-accent-fg: oklch(0.145 0 0);
+  --poise-color-danger: oklch(0.7 0.08 30);
+  --poise-color-danger-fg: oklch(0.145 0 0);
+  --poise-color-ring: oklch(0.72 0.05 245);
 }
 
 /*

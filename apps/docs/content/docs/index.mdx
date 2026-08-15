@@ -33,12 +33,14 @@ npx poise-ui add button --target web
 ## How the targets relate
 
 ```text
-tokens     shared   CSS custom properties, inherited into shadow DOM
-motion     shared   one spring vocabulary, two animation APIs
+tokens     shared   CSS custom properties on :root
+variants   shared   one set of class strings, both targets
 API        matched  same variants, same sizes, same names
-code       separate React idioms in React, DOM idioms in Lit
+code       separate React idioms in React, DOM idioms in the custom element
 ```
 
-The tokens are plain CSS custom properties on `:root`, so the Web Component
-reads them through `var()` inside its shadow root without needing Tailwind at
-all. Tailwind maps the same properties into its theme with `@theme inline`.
+Both targets are Tailwind all the way down, and both compose their classes
+from the same `button-variants` file. Neither uses shadow DOM: the custom
+element renders into light DOM, so a class you write on it applies directly
+and `tailwind-merge` lets it beat the default. Tokens stay plain CSS custom
+properties on `:root`, which Tailwind maps into its theme with `@theme inline`.

@@ -58,12 +58,30 @@ export const items: ItemSource[] = [
     ],
   },
   {
+    name: "lib-button-variants",
+    target: "shared",
+    type: "registry:lib",
+    description: "Button base, variant and size class strings shared by both targets.",
+    files: [
+      {
+        src: "packages/variants/src/button.ts",
+        path: "lib/button-variants.ts",
+        type: "registry:lib",
+      },
+    ],
+  },
+  {
     name: "button",
     target: "react",
     type: "registry:ui",
     description: "Button with variants, sizes and a spring press interaction.",
     dependencies: ["motion", "class-variance-authority"],
-    registryDependencies: ["shared/tokens", "shared/lib-utils", "shared/lib-motion"],
+    registryDependencies: [
+      "shared/tokens",
+      "shared/lib-utils",
+      "shared/lib-motion",
+      "shared/lib-button-variants",
+    ],
     files: [
       {
         src: "packages/react/src/button/button.tsx",
@@ -76,9 +94,13 @@ export const items: ItemSource[] = [
     name: "button",
     target: "web",
     type: "registry:ui",
-    description: "Lit button matching the React design, tokens and press spring.",
-    dependencies: ["lit", "motion"],
-    registryDependencies: ["shared/tokens", "shared/lib-motion"],
+    description:
+      "Dependency-free custom element matching the React design. Light DOM, so Tailwind classes apply directly.",
+    registryDependencies: [
+      "shared/tokens",
+      "shared/lib-utils",
+      "shared/lib-button-variants",
+    ],
     files: [
       {
         src: "packages/web/src/button/poise-button.ts",

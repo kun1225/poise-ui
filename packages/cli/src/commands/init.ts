@@ -95,7 +95,11 @@ export const initCommand = defineCommand({
                 message: "Which target is this project?",
                 options: [
                   { value: "react", label: "React", hint: "Base UI + Motion" },
-                  { value: "web", label: "Web Components", hint: "Lit + Motion" },
+                  {
+                    value: "web",
+                    label: "Web Components",
+                    hint: "Custom elements + Tailwind",
+                  },
                 ],
               }),
             );
