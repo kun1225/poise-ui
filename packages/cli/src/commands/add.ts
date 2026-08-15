@@ -75,7 +75,7 @@ export const addCommand = defineCommand({
     component: {
       type: "positional",
       required: true,
-      description: 'Component name, e.g. "button" or "web/button"',
+      description: 'Component name, e.g. "accordion" or "react/accordion"',
     },
     target: {
       type: "string",

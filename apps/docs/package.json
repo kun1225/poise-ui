@@ -11,11 +11,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@poise-ui/motion": "workspace:*",
     "@poise-ui/react": "workspace:*",
-    "@poise-ui/shared": "workspace:*",
     "@poise-ui/tokens": "workspace:*",
-    "@poise-ui/web": "workspace:*",
     "fumadocs-core": "^16.14.4",
     "fumadocs-mdx": "^15.2.3",
     "next": "^16.3.1",

@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               poise-ui
             </Link>
             <Link
-              href="/docs/components/button"
+              href="/docs/components/accordion"
               className="text-sm text-muted-fg transition-colors hover:text-fg"
             >
               Components

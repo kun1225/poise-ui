@@ -3,15 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": {
-    "./button": "./src/button/poise-button.ts"
-  },
+  "exports": {},
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@poise-ui/shared": "workspace:*",
-    "@poise-ui/variants": "workspace:*"
+    "@poise-ui/shared": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^7.0.2"

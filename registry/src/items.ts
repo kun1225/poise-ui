@@ -58,53 +58,17 @@ export const items: ItemSource[] = [
     ],
   },
   {
-    name: "lib-button-variants",
-    target: "shared",
-    type: "registry:lib",
-    description: "Button base, variant and size class strings shared by both targets.",
-    files: [
-      {
-        src: "packages/variants/src/button.ts",
-        path: "lib/button-variants.ts",
-        type: "registry:lib",
-      },
-    ],
-  },
-  {
-    name: "button",
+    name: "accordion",
     target: "react",
     type: "registry:ui",
-    description: "Button with variants, sizes and a spring press interaction.",
-    dependencies: ["motion", "class-variance-authority"],
-    registryDependencies: [
-      "shared/tokens",
-      "shared/lib-utils",
-      "shared/lib-motion",
-      "shared/lib-button-variants",
-    ],
-    files: [
-      {
-        src: "packages/react/src/button/button.tsx",
-        path: "components/ui/button.tsx",
-        type: "registry:ui",
-      },
-    ],
-  },
-  {
-    name: "button",
-    target: "web",
-    type: "registry:ui",
     description:
-      "Dependency-free custom element matching the React design. Light DOM, so Tailwind classes apply directly.",
-    registryDependencies: [
-      "shared/tokens",
-      "shared/lib-utils",
-      "shared/lib-button-variants",
-    ],
+      "Accordion built on Base UI, with a CSS-driven panel height transition.",
+    dependencies: ["@base-ui/react"],
+    registryDependencies: ["shared/tokens", "shared/lib-utils"],
     files: [
       {
-        src: "packages/web/src/button/poise-button.ts",
-        path: "components/ui/poise-button.ts",
+        src: "packages/react/src/accordion/accordion.tsx",
+        path: "components/ui/accordion.tsx",
         type: "registry:ui",
       },
     ],

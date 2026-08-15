@@ -1,14 +1,15 @@
 ---
 title: Introduction
-description: A source-distributed component library for React and Web Components.
+description: A source-distributed component library for React.
 ---
 
 poise-ui is not an npm package you install. It is a registry of source files
 that the CLI copies into your project, where you own and edit them.
 
-Every component ships in two implementations — React and a native Web
-Component — that share design tokens, a motion vocabulary and an API shape,
-but not code. Each is written the way its platform wants to be written.
+Components are built on [Base UI](https://base-ui.com) for behaviour and
+accessibility, and styled with Tailwind against a small set of design tokens.
+Nothing is hidden behind a package boundary: the file that lands in your repo
+is the whole component.
 
 ## Getting started
 
@@ -21,26 +22,25 @@ npx poise-ui init
 Then add a component:
 
 ```bash
-npx poise-ui add button
+npx poise-ui add accordion
 ```
 
-Or the Web Component build of the same design:
+The CLI writes the component into your components directory, pulls in whatever
+it depends on — tokens, the `cn` helper — and rewrites imports to match the
+aliases you chose at init.
 
-```bash
-npx poise-ui add button --target web
-```
-
-## How the targets relate
+## How it fits together
 
 ```text
-tokens     shared   CSS custom properties on :root
-variants   shared   one set of class strings, both targets
-API        matched  same variants, same sizes, same names
-code       separate React idioms in React, DOM idioms in the custom element
+tokens      CSS custom properties on :root, mapped into Tailwind's theme
+behaviour   Base UI primitives, wrapped thinly
+styling     Tailwind classes composed with cn(), yours to change
 ```
 
-Both targets are Tailwind all the way down, and both compose their classes
-from the same `button-variants` file. Neither uses shadow DOM: the custom
-element renders into light DOM, so a class you write on it applies directly
-and `tailwind-merge` lets it beat the default. Tokens stay plain CSS custom
-properties on `:root`, which Tailwind maps into its theme with `@theme inline`.
+Tokens stay plain CSS custom properties on `:root`, which Tailwind maps into
+its theme with `@theme inline`. Restyling a component means editing its
+classes; restyling everything means editing the tokens.
+
+<Callout>
+  A Web Component target is planned. Only the React components ship today.
+</Callout>

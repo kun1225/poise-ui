@@ -2,14 +2,10 @@
 @import "@poise-ui/tokens/tokens.css";
 
 /*
- * Component classes live in workspace packages, outside Next's own scan.
- * `variants` holds the shared strings; the two target packages hold the
- * per-target state classes. The web target renders into light DOM, so its
- * classes are as purgeable as React's — both have to be scanned.
+ * Component classes live in a workspace package, outside Next's own scan,
+ * so Tailwind has to be pointed at it explicitly.
  */
-@source "../../../packages/variants/src";
 @source "../../../packages/react/src";
-@source "../../../packages/web/src";
 
 body {
   background: var(--poise-color-bg);

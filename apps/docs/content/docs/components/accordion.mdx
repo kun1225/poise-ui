@@ -1,0 +1,80 @@
+---
+title: Accordion
+description: A stack of headings that each reveal a panel of content.
+---
+
+<ComponentPreview name="accordion" />
+
+## Installation
+
+<InstallCommand component="accordion" />
+
+This copies `accordion.tsx` into your components directory, along with the
+design tokens and the `cn` helper it depends on. Edit it in place.
+
+## Usage
+
+```tsx
+import {
+  Accordion,
+  AccordionItem,
+  AccordionPanel,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
+<Accordion defaultValue={["overview"]}>
+  <AccordionItem value="overview">
+    <AccordionTrigger>Overview</AccordionTrigger>
+    <AccordionPanel>Panel content.</AccordionPanel>
+  </AccordionItem>
+</Accordion>;
+```
+
+`AccordionTrigger` renders the heading and the button together, so the pair
+never has to be repeated by hand. Give every `AccordionItem` a `value` when you
+want to control the accordion or set an initial open state.
+
+## Anatomy
+
+```text
+Accordion          Base UI Accordion.Root
+  AccordionItem      Base UI Accordion.Item
+    AccordionTrigger Base UI Accordion.Header + Accordion.Trigger
+    AccordionPanel   Base UI Accordion.Panel
+```
+
+## Props
+
+Every component forwards the props of the Base UI part it wraps. The ones you
+will reach for most:
+
+| Prop | On | Type | Default | Description |
+| --- | --- | --- | --- | --- |
+| `defaultValue` | `Accordion` | `Value[]` | — | Items expanded on first render. |
+| `value` | `Accordion` | `Value[]` | — | Controlled expanded items. |
+| `onValueChange` | `Accordion` | `(value, details) => void` | — | Called when an item expands or collapses. |
+| `multiple` | `Accordion` | `boolean` | `false` | Allow more than one item open at once. |
+| `disabled` | `Accordion`, `AccordionItem` | `boolean` | `false` | Ignore user interaction. |
+| `value` | `AccordionItem` | `any` | auto | Identifies the item. |
+| `headerClassName` | `AccordionTrigger` | `string` | — | Classes for the wrapping heading element. |
+| `keepMounted` | `Accordion`, `AccordionPanel` | `boolean` | `false` | Keep closed panels in the DOM. |
+| `hiddenUntilFound` | `Accordion`, `AccordionPanel` | `boolean` | `false` | Let browser find-in-page open a closed panel. |
+
+<Callout>
+  `hiddenUntilFound` keeps panel content searchable by the browser. It
+  overrides `keepMounted`.
+</Callout>
+
+## Animation
+
+The panel animates its height from Base UI's `--accordion-panel-height`
+variable, driven by `data-starting-style` and `data-ending-style`. It is a
+plain CSS transition timed off the `--poise-duration-base` and
+`--poise-ease-standard` tokens, so there is no motion library to install and
+retiming it means changing a token.
+
+## Accessibility
+
+Base UI supplies the heading, `aria-expanded`, and the trigger-to-panel
+wiring. Keyboard support follows the APG: <kbd>Tab</kbd> moves between
+triggers, <kbd>Enter</kbd> and <kbd>Space</kbd> toggle the focused one.

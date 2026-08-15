@@ -151,7 +151,7 @@ export const initCommand = defineCommand({
           `Tokens written to ${pc.dim(written[0])} — import it from your global stylesheet.`,
         );
       }
-      outro(pc.green(`Ready. Try: poise-ui add button`));
+      outro(pc.green(`Ready. Try: poise-ui add accordion`));
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
       log.error(detail);
