@@ -1,0 +1,44 @@
+---
+title: Introduction
+description: A source-distributed component library for React and Web Components.
+---
+
+poise-ui is not an npm package you install. It is a registry of source files
+that the CLI copies into your project, where you own and edit them.
+
+Every component ships in two implementations — React and a native Web
+Component — that share design tokens, a motion vocabulary and an API shape,
+but not code. Each is written the way its platform wants to be written.
+
+## Getting started
+
+Set up the config and design tokens:
+
+```bash
+npx poise-ui init
+```
+
+Then add a component:
+
+```bash
+npx poise-ui add button
+```
+
+Or the Web Component build of the same design:
+
+```bash
+npx poise-ui add button --target web
+```
+
+## How the targets relate
+
+```text
+tokens     shared   CSS custom properties, inherited into shadow DOM
+motion     shared   one spring vocabulary, two animation APIs
+API        matched  same variants, same sizes, same names
+code       separate React idioms in React, DOM idioms in Lit
+```
+
+The tokens are plain CSS custom properties on `:root`, so the Web Component
+reads them through `var()` inside its shadow root without needing Tailwind at
+all. Tailwind maps the same properties into its theme with `@theme inline`.
