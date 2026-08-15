@@ -1,0 +1,17 @@
+{
+  "name": "poise-ui-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.18.0",
+  "scripts": {
+    "build": "turbo run build",
+    "registry": "turbo run registry",
+    "typecheck": "turbo run typecheck"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "turbo": "^2.10.10",
+    "typescript": "^7.0.2"
+  }
+}

@@ -1,0 +1,60 @@
+/*
+ * Layer 1 — raw custom properties.
+ * Framework-agnostic and inherited into shadow DOM, so Lit components
+ * consume these directly via var(). Never reference Tailwind here.
+ */
+:root {
+  --poise-color-bg: oklch(1 0 0);
+  --poise-color-fg: oklch(0.21 0.006 285.9);
+  --poise-color-muted: oklch(0.967 0.001 286.4);
+  --poise-color-muted-fg: oklch(0.552 0.016 285.9);
+  --poise-color-border: oklch(0.92 0.004 286.3);
+  --poise-color-accent: oklch(0.55 0.22 264);
+  --poise-color-accent-fg: oklch(0.985 0 0);
+  --poise-color-danger: oklch(0.58 0.23 27.3);
+  --poise-color-danger-fg: oklch(0.985 0 0);
+  --poise-color-ring: oklch(0.55 0.22 264);
+
+  --poise-radius-sm: 0.375rem;
+  --poise-radius-md: 0.5rem;
+  --poise-radius-lg: 0.75rem;
+
+  --poise-duration-fast: 120ms;
+  --poise-duration-base: 180ms;
+  --poise-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+.dark {
+  --poise-color-bg: oklch(0.141 0.005 285.8);
+  --poise-color-fg: oklch(0.985 0 0);
+  --poise-color-muted: oklch(0.274 0.006 286.0);
+  --poise-color-muted-fg: oklch(0.705 0.015 286.1);
+  --poise-color-border: oklch(0.274 0.006 286.0);
+  --poise-color-accent: oklch(0.62 0.19 264);
+  --poise-color-accent-fg: oklch(0.141 0.005 285.8);
+  --poise-color-danger: oklch(0.64 0.21 25.3);
+  --poise-color-danger-fg: oklch(0.985 0 0);
+  --poise-color-ring: oklch(0.62 0.19 264);
+}
+
+/*
+ * Layer 2 — Tailwind v4 theme mapping.
+ * `inline` keeps the var() reference live, so .dark still switches at runtime.
+ * Unknown at-rule outside a Tailwind build; browsers ignore it safely.
+ */
+@theme inline {
+  --color-bg: var(--poise-color-bg);
+  --color-fg: var(--poise-color-fg);
+  --color-muted: var(--poise-color-muted);
+  --color-muted-fg: var(--poise-color-muted-fg);
+  --color-border: var(--poise-color-border);
+  --color-accent: var(--poise-color-accent);
+  --color-accent-fg: var(--poise-color-accent-fg);
+  --color-danger: var(--poise-color-danger);
+  --color-danger-fg: var(--poise-color-danger-fg);
+  --color-ring: var(--poise-color-ring);
+
+  --radius-sm: var(--poise-radius-sm);
+  --radius-md: var(--poise-radius-md);
+  --radius-lg: var(--poise-radius-lg);
+}

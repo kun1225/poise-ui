@@ -1,0 +1,20 @@
+{
+  "name": "@poise-ui/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./button": "./src/button/poise-button.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@poise-ui/motion": "workspace:*",
+    "lit": "^3.3.3",
+    "motion": "^13.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}
