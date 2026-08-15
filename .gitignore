@@ -3,3 +3,9 @@ dist
 .turbo
 *.tsbuildinfo
 .DS_Store
+
+# Next.js generates these
+.next
+next-env.d.ts
+apps/*/AGENTS.md
+apps/*/CLAUDE.md
