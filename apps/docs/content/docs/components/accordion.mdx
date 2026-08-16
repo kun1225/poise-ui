@@ -45,10 +45,11 @@ The stagger runs on the panel's **element** children, so the content has to be
 made of elements - paragraphs, list items, rows. A panel holding bare text has
 nothing to stagger and falls back to the plain height transition.
 
-Delays step 50ms apart and stop at the fifth child, which keeps the last item
-under 400ms even in a long panel. Closing is never staggered: the panel
-collapses as one, because reversing the ladder on the way out feels slow.
-Under `prefers-reduced-motion`, the delays and the fade are dropped.
+Delays step 75ms apart and stop at the fifth child, so a long panel settles in
+roughly half a second instead of growing without limit. Closing is never
+staggered: the panel collapses as one, because reversing the ladder on the way
+out feels slow. Under `prefers-reduced-motion`, the delays and the fade are
+dropped.
 
 ## Anatomy
 

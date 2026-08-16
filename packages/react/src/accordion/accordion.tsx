@@ -79,7 +79,7 @@ function AccordionTrigger({
  */
 const staggerChildren = cn(
   "[&>*]:duration-base [&>*]:ease-standard [&>*]:transition-[opacity,translate]",
-  "group-data-ending-style/reveal:[&>*]:translate-y-1 group-data-ending-style/reveal:[&>*]:opacity-0 group-data-starting-style/reveal:[&>*]:translate-y-1 group-data-starting-style/reveal:[&>*]:opacity-0",
+  "group-data-starting-style/reveal:[&>*]:translate-y-1 group-data-starting-style/reveal:[&>*]:opacity-0",
   "[&>*:nth-child(2)]:delay-100",
   "[&>*:nth-child(3)]:delay-175",
   "[&>*:nth-child(4)]:delay-250",
