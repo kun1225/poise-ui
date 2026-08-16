@@ -27,7 +27,7 @@ const RECEDED = { scale: 0.96, opacity: 0.65, blur: 1.5 };
 type MorphRootContextValue = {
   gap: number;
   depth: boolean;
-  openIndexes: readonly number[];
+  openIndex: number | null;
   reportOpen: (index: number, open: boolean) => void;
 };
 
@@ -51,7 +51,10 @@ function useMorphItem(part: string) {
   return context;
 }
 
-export type MorphAccordionProps = Omit<Primitive.Root.Props, "render"> & {
+export type MorphAccordionProps = Omit<
+  Primitive.Root.Props,
+  "render" | "multiple"
+> & {
   /** Divide rows that are both closed. Off leaves the stack as one blank card. */
   hasBorder?: boolean;
   /**
@@ -65,8 +68,15 @@ export type MorphAccordionProps = Omit<Primitive.Root.Props, "render"> & {
 
 /**
  * The root owns the one thing an item cannot see for itself: which of its
- * siblings is open. Items report their own state here on layout, so the
- * neighbours know which way to move within the same frame as the panel opens.
+ * siblings is open. Base UI hands an item the root's open `value`, but those
+ * are item values - auto-generated ids unless you set them - so there is no way
+ * back from one to a sibling's index. Items report their own state here on
+ * layout instead, and the neighbours learn which way to move within the same
+ * frame as the panel opens.
+ *
+ * One index rather than a set: `multiple` is off the public props, because a
+ * row caught between two open rows can only be pushed one way and the gap would
+ * open on one side of it while staying shut on the other.
  *
  * `hasBorder` still resolves to a custom property rather than being handed
  * down, because borders are the part that stayed in CSS.
@@ -82,22 +92,25 @@ function MorphAccordion({
   gap = 16,
   ...props
 }: MorphAccordionProps) {
-  const [openIndexes, setOpenIndexes] = useState<readonly number[]>([]);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
+  // Both halves compare against `index` first, and both bail by returning
+  // `current` untouched so React can skip the re-render - most rows are already
+  // in the state they are reporting. On the closing half that check is also
+  // load-bearing: switching rows closes one and opens another in the same
+  // commit, and a row may only clear the slot it still holds.
   const reportOpen = useCallback((index: number, open: boolean) => {
-    setOpenIndexes((current) => {
-      if (current.includes(index) === open) {
-        return current;
+    setOpenIndex((current) => {
+      if (open) {
+        return current === index ? current : index;
       }
-      return open
-        ? [...current, index].sort((a, b) => a - b)
-        : current.filter((openIndex) => openIndex !== index);
+      return current === index ? null : current;
     });
   }, []);
 
   const context = useMemo(
-    () => ({ gap, depth, openIndexes, reportOpen }),
-    [gap, depth, openIndexes, reportOpen],
+    () => ({ gap, depth, openIndex, reportOpen }),
+    [gap, depth, openIndex, reportOpen],
   );
 
   return (
@@ -186,7 +199,7 @@ function MorphItemSurface({
   children,
   ...props
 }: MorphItemSurfaceProps) {
-  const { gap, depth, openIndexes, reportOpen } =
+  const { gap, depth, openIndex, reportOpen } =
     useMorphRoot("MorphAccordionItem");
 
   // Layout, not passive: the report has to land before paint, or a neighbour
@@ -196,7 +209,9 @@ function MorphItemSurface({
     return () => reportOpen(index, false);
   }, [index, open, reportOpen]);
 
-  const push = open ? 0 : pushDirection(index, openIndexes);
+  // Which way the open row shoves this one: 1 down, -1 up, 0 not at all.
+  const push =
+    open || openIndex === null ? 0 : openIndex < index ? 1 : -1;
   const receded = depth && push !== 0;
 
   return (
@@ -216,26 +231,6 @@ function MorphItemSurface({
       <MorphItemContext value={{ open }}>{children}</MorphItemContext>
     </motion.div>
   );
-}
-
-/**
- * Which way the nearest open row shoves this one: 1 down, -1 up, 0 not at all.
- * Nearest rather than first, so a row caught between two open rows moves away
- * from the one that actually crowds it.
- */
-function pushDirection(index: number, openIndexes: readonly number[]) {
-  let direction = 0;
-  let shortest = Infinity;
-
-  for (const openIndex of openIndexes) {
-    const distance = Math.abs(openIndex - index);
-    if (distance < shortest) {
-      shortest = distance;
-      direction = openIndex < index ? 1 : -1;
-    }
-  }
-
-  return direction;
 }
 
 export type MorphAccordionTriggerProps = Omit<
