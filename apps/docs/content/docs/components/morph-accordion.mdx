@@ -1,0 +1,99 @@
+---
+title: Morph Accordion
+description: A stack of rows that splits apart, so the open one becomes a card of its own.
+---
+
+<ComponentPreview name="morph-accordion" />
+
+## Installation
+
+<InstallCommand component="morph-accordion" />
+
+This copies `morph-accordion.tsx` into your components directory, along with
+the design tokens and the `cn` helper it depends on. Edit it in place.
+
+## Usage
+
+```tsx
+import {
+  MorphAccordion,
+  MorphAccordionItem,
+  MorphAccordionPanel,
+  MorphAccordionTrigger,
+} from "@/components/ui/morph-accordion";
+
+<MorphAccordion>
+  <MorphAccordionItem value="overview">
+    <MorphAccordionTrigger>Overview</MorphAccordionTrigger>
+    <MorphAccordionPanel>Panel content.</MorphAccordionPanel>
+  </MorphAccordionItem>
+</MorphAccordion>;
+```
+
+The trailing plus rotates 225 degrees into a cross while the panel is open.
+
+## The morph
+
+Closed, the rows read as one card. Opening a row detaches it: it rounds on all
+four corners, and the rows above and below slide `1.5rem` clear and seal
+themselves into two cards of their own.
+
+The gap is a `translate`, not a margin, so the row you clicked never moves -
+only its neighbours do. Two things follow from that:
+
+- Those neighbours move **outside** the accordion's own box. Leave `1.5rem` of
+  room above and below it, or the effect will overlap whatever sits alongside.
+- Nothing reflows. Every border is present at all times and only its colour
+  changes, so the choreography never shifts layout by the width of a border.
+
+Set `--morph-gap` on the root to change the distance:
+
+```tsx
+<MorphAccordion className="[--morph-gap:2.5rem]">
+```
+
+The height uses `ease-out-back` and `duration-slower`, overshooting slightly
+before it settles, while the borders and the gap resolve in `duration-middle`.
+That mismatch is deliberate - the stack splits quickly and the card fills in
+after it, which is what makes it read as pushing open rather than resizing.
+
+## Options
+
+`MorphAccordion` takes two props beyond Base UI's own.
+
+| Prop        | Default | Effect                                                    |
+| ----------- | ------- | --------------------------------------------------------- |
+| `hasBorder` | `true`  | Divides rows that are both closed.                        |
+| `scale`     | `false` | Shrinks the rows that stayed closed while one row is open. |
+
+<ComponentPreview name="morph-accordion-plain" />
+
+Turning `hasBorder` off does not strip the borders that make the morph
+readable. Every edge where a card has to seal - the two ends of the stack, and
+both sides of the gap - stays painted. Only the divider between two closed rows
+goes away, so the stack starts as one blank card and gains its seams as it
+splits.
+
+`scale` is the flat cousin of the `translateZ` variant in the original pen: the
+rows that stayed closed drop to `0.97`, which reads as the open card coming
+forward rather than the others receding.
+
+Neither prop is drilled down the tree. Both resolve to a custom property on the
+root, so you can set either through `className` instead, and pick your own
+values:
+
+```tsx
+<MorphAccordion className="[--morph-closed-scale:0.92] [--morph-gap:2.5rem]">
+```
+
+## Anatomy
+
+```text
+MorphAccordion          Base UI Accordion.Root
+  MorphAccordionItem      Base UI Accordion.Item
+    MorphAccordionTrigger Base UI Accordion.Header + Accordion.Trigger
+    MorphAccordionPanel   Base UI Accordion.Panel
+```
+
+Adapted from [a pen by Jhey Tompkins](https://codepen.io/jh3y/pen/QwyYoVr),
+rebuilt on Base UI so the panel height animates without measuring anything.

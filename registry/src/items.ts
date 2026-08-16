@@ -21,7 +21,8 @@ export const items: ItemSource[] = [
     name: "tokens",
     target: "shared",
     type: "registry:style",
-    description: "Design tokens as CSS custom properties plus Tailwind theme mapping.",
+    description:
+      "Design tokens as CSS custom properties plus Tailwind theme mapping.",
     files: [
       {
         src: "packages/tokens/src/tokens.css",
@@ -34,7 +35,8 @@ export const items: ItemSource[] = [
     name: "lib-motion",
     target: "shared",
     type: "registry:lib",
-    description: "Shared spring vocabulary for React and Web Component targets.",
+    description:
+      "Shared spring vocabulary for React and Web Component targets.",
     files: [
       {
         src: "packages/motion/src/springs.ts",
@@ -73,6 +75,26 @@ export const items: ItemSource[] = [
       {
         src: "packages/react/src/accordion/accordion.tsx",
         path: "components/ui/accordion.tsx",
+        type: "registry:ui",
+      },
+    ],
+  },
+  {
+    name: "morph-accordion",
+    target: "react",
+    type: "registry:ui",
+    description:
+      "Accordion whose open item detaches from the stack as a card of its own.",
+    dependencies: [
+      "@base-ui/react",
+      "@hugeicons/react",
+      "@hugeicons/core-free-icons",
+    ],
+    registryDependencies: ["shared/tokens", "shared/lib-utils"],
+    files: [
+      {
+        src: "packages/react/src/morph-accordion/morph-accordion.tsx",
+        path: "components/ui/morph-accordion.tsx",
         type: "registry:ui",
       },
     ],

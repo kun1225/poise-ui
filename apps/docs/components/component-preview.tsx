@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { AccordionDemo } from "@/components/demos/accordion-demo";
 import { AccordionStaggerDemo } from "@/components/demos/accordion-stagger-demo";
+import { MorphAccordionDemo } from "@/components/demos/morph-accordion-demo";
+import { MorphAccordionPlainDemo } from "@/components/demos/morph-accordion-plain-demo";
 import { PreviewPanel } from "@/components/preview-panel";
 
 /** Statically scoped so Turbopack traces only this folder, not the project. */
@@ -13,6 +15,14 @@ const demos = {
   "accordion-stagger": {
     node: <AccordionStaggerDemo />,
     src: "accordion-stagger-demo.tsx",
+  },
+  "morph-accordion": {
+    node: <MorphAccordionDemo />,
+    src: "morph-accordion-demo.tsx",
+  },
+  "morph-accordion-plain": {
+    node: <MorphAccordionPlainDemo />,
+    src: "morph-accordion-plain-demo.tsx",
   },
 } as const;
 
