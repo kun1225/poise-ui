@@ -20,11 +20,11 @@ export type Spring = {
 
 export const springs = {
   /** Buttons, toggles, anything under the pointer. */
-  snappy: { type: "spring", visualDuration: 0.18, bounce: 0.22 },
+  snappy: { type: "spring", visualDuration: 0.2, bounce: 0.2 },
   /** Panels, popovers, layout shifts. */
-  smooth: { type: "spring", visualDuration: 0.3, bounce: 0.13 },
+  smooth: { type: "spring", visualDuration: 0.42, bounce: 0.4 },
   /** Deliberate overshoot. Use sparingly. */
-  bouncy: { type: "spring", visualDuration: 0.26, bounce: 0.55 },
+  bouncy: { type: "spring", visualDuration: 0.3, bounce: 0.4 },
 } as const satisfies Record<string, Spring>;
 
 export type SpringName = keyof typeof springs;
