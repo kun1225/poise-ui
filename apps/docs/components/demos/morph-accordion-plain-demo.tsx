@@ -8,7 +8,7 @@ import {
 export function MorphAccordionPlainDemo() {
   return (
     <MorphAccordion className="my-6 max-w-85" hasBorder={false} scale>
-      <MorphAccordionItem value="dividers">
+      <MorphAccordionItem>
         <MorphAccordionTrigger>
           Where did the dividers go?
         </MorphAccordionTrigger>
@@ -18,7 +18,7 @@ export function MorphAccordionPlainDemo() {
         </MorphAccordionPanel>
       </MorphAccordionItem>
 
-      <MorphAccordionItem value="scale">
+      <MorphAccordionItem>
         <MorphAccordionTrigger>What is scale doing?</MorphAccordionTrigger>
         <MorphAccordionPanel>
           The rows that stayed closed shrink slightly, so the open card sits in
@@ -26,7 +26,7 @@ export function MorphAccordionPlainDemo() {
         </MorphAccordionPanel>
       </MorphAccordionItem>
 
-      <MorphAccordionItem value="edges">
+      <MorphAccordionItem>
         <MorphAccordionTrigger>What still gets a border?</MorphAccordionTrigger>
         <MorphAccordionPanel>
           Every edge where a card has to seal - the ends of the stack, and both

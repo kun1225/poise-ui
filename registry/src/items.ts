@@ -89,8 +89,13 @@ export const items: ItemSource[] = [
       "@base-ui/react",
       "@hugeicons/react",
       "@hugeicons/core-free-icons",
+      "motion",
     ],
-    registryDependencies: ["shared/tokens", "shared/lib-utils"],
+    registryDependencies: [
+      "shared/tokens",
+      "shared/lib-utils",
+      "shared/lib-motion",
+    ],
     files: [
       {
         src: "packages/react/src/morph-accordion/morph-accordion.tsx",

@@ -14,7 +14,9 @@
     "@base-ui/react": "^1.7.0",
     "@hugeicons/core-free-icons": "^4.2.3",
     "@hugeicons/react": "^1.1.9",
-    "@poise-ui/shared": "workspace:*"
+    "@poise-ui/motion": "workspace:*",
+    "@poise-ui/shared": "workspace:*",
+    "motion": "^13.1.0"
   },
   "peerDependencies": {
     "react": "^19.0.0"
