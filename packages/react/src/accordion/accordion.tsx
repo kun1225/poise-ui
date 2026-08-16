@@ -3,7 +3,6 @@
 import { Accordion as Primitive } from "@base-ui/react/accordion";
 import { ArrowDown01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-
 import { cn } from "@poise-ui/shared";
 
 function Accordion({ className, ...props }: Primitive.Root.Props) {
@@ -66,23 +65,57 @@ function AccordionTrigger({
   );
 }
 
+/**
+ * Fades the panel's direct children in one after another, keyed off the
+ * `data-starting-style` frame Base UI puts on the panel while it opens.
+ *
+ * The delays are a fixed ladder rather than a per-child variable, which keeps
+ * the whole effect in CSS with no per-item JS. The fifth child onwards shares
+ * the last step so a long panel does not drag. Only element children stagger,
+ * since bare text has nothing to hang a delay on.
+ *
+ * Closing is deliberately not staggered - the panel collapses as one, which
+ * reads as faster than reversing the ladder.
+ */
+const staggerChildren = cn(
+  "[&>*]:duration-base [&>*]:ease-standard [&>*]:transition-[opacity,translate]",
+  "group-data-ending-style/reveal:[&>*]:translate-y-1 group-data-ending-style/reveal:[&>*]:opacity-0 group-data-starting-style/reveal:[&>*]:translate-y-1 group-data-starting-style/reveal:[&>*]:opacity-0",
+  "[&>*:nth-child(2)]:delay-100",
+  "[&>*:nth-child(3)]:delay-175",
+  "[&>*:nth-child(4)]:delay-250",
+  "[&>*:nth-child(n+5)]:delay-325",
+  "motion-reduce:[&>*]:transition-none motion-reduce:[&>*]:delay-0",
+);
+
+export type AccordionPanelProps = Primitive.Panel.Props & {
+  reveal?: "none" | "stagger";
+};
+
 function AccordionPanel({
   className,
   children,
+  reveal = "none",
   ...props
-}: Primitive.Panel.Props) {
+}: AccordionPanelProps) {
+  const staggered = reveal === "stagger";
+
   return (
     <Primitive.Panel
       data-slot="accordion-panel"
       className={cn(
         "text-muted-fg h-(--accordion-panel-height) overflow-hidden text-sm",
-        "data-ending-style:h-0 data-ending-style:translate-y-2 data-ending-style:opacity-0 data-starting-style:h-0 data-starting-style:translate-y-2",
-        "duration-base ease-standard transition-[opacity,height,translate]",
+        "data-ending-style:h-0 data-ending-style:opacity-0 data-starting-style:h-0",
+        "duration-base ease-standard transition-[opacity,height,translate] data-ending-style:translate-y-2 data-starting-style:translate-y-2",
+        staggered
+          ? "group/reveal"
+          : "data-ending-style:translate-y-1 data-starting-style:translate-y-1",
         className,
       )}
       {...props}
     >
-      <div className="px-4 pt-0.5 pb-2">{children}</div>
+      <div className={cn("px-4 pt-0.5 pb-2", staggered && staggerChildren)}>
+        {children}
+      </div>
     </Primitive.Panel>
   );
 }
