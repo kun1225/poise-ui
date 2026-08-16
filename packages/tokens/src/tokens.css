@@ -21,9 +21,32 @@
   --poise-radius-md: 0.5rem;
   --poise-radius-lg: 0.75rem;
 
+  --poise-duration-instant: 80ms;
   --poise-duration-fast: 120ms;
   --poise-duration-base: 180ms;
+  --poise-duration-middle: 240ms;
+  --poise-duration-slow: 300ms;
+  --poise-duration-slower: 420ms;
+
   --poise-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --poise-ease-out-sine: cubic-bezier(0.61, 1, 0.87, 1);
+  --poise-ease-in-out-sine: cubic-bezier(0.36, 0, 0.64, 1);
+  --poise-ease-out-quad: cubic-bezier(0.5, 1, 0.89, 1);
+  --poise-ease-in-out-quad: cubic-bezier(0.44, 0, 0.56, 1);
+  --poise-ease-out-cubic: cubic-bezier(0.33, 1, 0.68, 1);
+  --poise-ease-in-out-cubic: cubic-bezier(0.66, 0, 0.34, 1);
+  --poise-ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --poise-ease-in-out-quart: cubic-bezier(0.78, 0, 0.22, 1);
+  --poise-ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --poise-ease-in-out-quint: cubic-bezier(0.86, 0, 0.14, 1);
+  --poise-ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --poise-ease-in-out-expo: cubic-bezier(0.9, 0, 0.1, 1);
+  --poise-ease-out-circ: cubic-bezier(0, 0.55, 0.45, 1);
+  --poise-ease-in-out-circ: cubic-bezier(0.85, 0.09, 0.15, 0.91);
+  --poise-ease-in-out-jump: cubic-bezier(1, 0, 0, 1);
+  --poise-ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --poise-ease-in-out-back: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+  --poise-ease-in-out-anticipate: cubic-bezier(0.8, -0.4, 0.5, 1);
 }
 
 .dark {
@@ -60,4 +83,31 @@
   --radius-sm: var(--poise-radius-sm);
   --radius-md: var(--poise-radius-md);
   --radius-lg: var(--poise-radius-lg);
+
+  --duration-instant: var(--poise-duration-instant);
+  --duration-fast: var(--poise-duration-fast);
+  --duration-base: var(--poise-duration-base);
+  --duration-middle: var(--poise-duration-middle);
+  --duration-slow: var(--poise-duration-slow);
+  --duration-slower: var(--poise-duration-slower);
+
+  --ease-standard: var(--poise-ease-standard);
+  --ease-out-sine: var(--poise-ease-out-sine);
+  --ease-in-out-sine: var(--poise-ease-in-out-sine);
+  --ease-out-quad: var(--poise-ease-out-quad);
+  --ease-in-out-quad: var(--poise-ease-in-out-quad);
+  --ease-out-cubic: var(--poise-ease-out-cubic);
+  --ease-in-out-cubic: var(--poise-ease-in-out-cubic);
+  --ease-out-quart: var(--poise-ease-out-quart);
+  --ease-in-out-quart: var(--poise-ease-in-out-quart);
+  --ease-out-quint: var(--poise-ease-out-quint);
+  --ease-in-out-quint: var(--poise-ease-in-out-quint);
+  --ease-out-expo: var(--poise-ease-out-expo);
+  --ease-in-out-expo: var(--poise-ease-in-out-expo);
+  --ease-out-circ: var(--poise-ease-out-circ);
+  --ease-in-out-circ: var(--poise-ease-in-out-circ);
+  --ease-in-out-jump: var(--poise-ease-in-out-jump);
+  --ease-out-back: var(--poise-ease-out-back);
+  --ease-in-out-back: var(--poise-ease-in-out-back);
+  --ease-in-out-anticipate: var(--poise-ease-in-out-anticipate);
 }
