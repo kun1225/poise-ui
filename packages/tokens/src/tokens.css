@@ -84,12 +84,13 @@
   --radius-md: var(--poise-radius-md);
   --radius-lg: var(--poise-radius-lg);
 
-  --duration-instant: var(--poise-duration-instant);
-  --duration-fast: var(--poise-duration-fast);
-  --duration-base: var(--poise-duration-base);
-  --duration-middle: var(--poise-duration-middle);
-  --duration-slow: var(--poise-duration-slow);
-  --duration-slower: var(--poise-duration-slower);
+  /* The namespace is `--transition-duration-*`; `--duration-*` emits no utility. */
+  --transition-duration-instant: var(--poise-duration-instant);
+  --transition-duration-fast: var(--poise-duration-fast);
+  --transition-duration-base: var(--poise-duration-base);
+  --transition-duration-middle: var(--poise-duration-middle);
+  --transition-duration-slow: var(--poise-duration-slow);
+  --transition-duration-slower: var(--poise-duration-slower);
 
   --ease-standard: var(--poise-ease-standard);
   --ease-out-sine: var(--poise-ease-out-sine);
