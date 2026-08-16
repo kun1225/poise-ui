@@ -19,7 +19,7 @@ function AccordionItem({ className, ...props }: Primitive.Item.Props) {
   return (
     <Primitive.Item
       data-slot="accordion-item"
-      className={cn("py-1", className)}
+      className={cn(className)}
       {...props}
     />
   );
@@ -58,6 +58,7 @@ function AccordionTrigger({
             "text-muted-fg shrink-0",
             "duration-base ease-standard transition-transform",
             "group-data-panel-open:rotate-180",
+            "group-hover:scale-115",
           )}
         />
       </Primitive.Trigger>
