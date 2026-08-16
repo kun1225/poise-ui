@@ -16,13 +16,17 @@ import {
   type ComponentProps,
 } from "react";
 
-const CLOSED_SCALE = 0.96;
-/** Panel content trails the split slightly, so the card reads as filling in. */
-const REVEAL_DELAY = 0.06;
+/**
+ * Where a row that stayed closed sits once `depth` pushes it back. Three cues
+ * for one impression: things further away are smaller, dimmer, and out of the
+ * focal plane. Any one of them alone reads as a state change rather than
+ * distance.
+ */
+const RECEDED = { scale: 0.96, opacity: 0.65, blur: 1.5 };
 
 type MorphRootContextValue = {
   gap: number;
-  closedScale: number;
+  depth: boolean;
   openIndexes: readonly number[];
   reportOpen: (index: number, open: boolean) => void;
 };
@@ -50,8 +54,11 @@ function useMorphItem(part: string) {
 export type MorphAccordionProps = Omit<Primitive.Root.Props, "render"> & {
   /** Divide rows that are both closed. Off leaves the stack as one blank card. */
   hasBorder?: boolean;
-  /** Shrink the rows that stayed closed while another row is open. */
-  scale?: boolean;
+  /**
+   * Push the rows that stayed closed into the background while another row is
+   * open - smaller, dimmer and slightly out of focus. They stay clickable.
+   */
+  depth?: boolean;
   /** Pixels a neighbouring row moves clear of the open one. */
   gap?: number;
 };
@@ -71,7 +78,7 @@ export type MorphAccordionProps = Omit<Primitive.Root.Props, "render"> & {
 function MorphAccordion({
   className,
   hasBorder = true,
-  scale = false,
+  depth = false,
   gap = 16,
   ...props
 }: MorphAccordionProps) {
@@ -89,13 +96,8 @@ function MorphAccordion({
   }, []);
 
   const context = useMemo(
-    () => ({
-      gap,
-      closedScale: scale ? CLOSED_SCALE : 1,
-      openIndexes,
-      reportOpen,
-    }),
-    [gap, scale, openIndexes, reportOpen],
+    () => ({ gap, depth, openIndexes, reportOpen }),
+    [gap, depth, openIndexes, reportOpen],
   );
 
   return (
@@ -137,7 +139,7 @@ const morphItem = cn(
   "data-open:border-t-border data-open:border-b-border data-open:z-1 data-open:rounded-2xl",
   "[&:has(+[data-open])]:border-b-border [&:has(+[data-open])]:rounded-b-2xl",
   "[[data-open]+&]:border-t-border [[data-open]+&]:rounded-t-2xl",
-  "duration-slowest ease-standard transition-[border-color,border-radius,background-color]",
+  "duration-slow ease-standard transition-[border-color,border-radius,background-color]",
 );
 
 export type MorphAccordionItemProps = Omit<Primitive.Item.Props, "render">;
@@ -184,7 +186,7 @@ function MorphItemSurface({
   children,
   ...props
 }: MorphItemSurfaceProps) {
-  const { gap, closedScale, openIndexes, reportOpen } =
+  const { gap, depth, openIndexes, reportOpen } =
     useMorphRoot("MorphAccordionItem");
 
   // Layout, not passive: the report has to land before paint, or a neighbour
@@ -195,12 +197,20 @@ function MorphItemSurface({
   }, [index, open, reportOpen]);
 
   const push = open ? 0 : pushDirection(index, openIndexes);
+  const receded = depth && push !== 0;
 
   return (
     <motion.div
       {...asMotionProps(props)}
       initial={false}
-      animate={{ y: push * gap, scale: push === 0 ? 1 : closedScale }}
+      animate={{
+        y: push * gap,
+        scale: receded ? RECEDED.scale : 1,
+        opacity: receded ? RECEDED.opacity : 1,
+        ...(depth && {
+          filter: receded ? `blur(${RECEDED.blur}px)` : "blur(0px)",
+        }),
+      }}
       transition={springs.bouncy}
     >
       <MorphItemContext value={{ open }}>{children}</MorphItemContext>
@@ -324,8 +334,7 @@ function MorphAccordionPanel({
                 : { y: 16, opacity: 0.4, filter: "blur(4px)" }
             }
             transition={{
-              ...springs.smooth,
-              delay: state.open ? REVEAL_DELAY : 0,
+              ...springs.bouncy,
             }}
           >
             {children}

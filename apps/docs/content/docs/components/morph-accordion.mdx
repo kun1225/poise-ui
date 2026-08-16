@@ -54,29 +54,28 @@ Set `gap` on the root to change the distance, in pixels:
 ```
 
 Everything that moves is a Motion spring from `lib/motion`. The card, the gap,
-the scale and the icon all run on `bouncy`, which crosses its target and comes
-back: the gap opens to about 19px before settling at 16, and the panel passes
-its content height by a fifth before dropping onto it. That overshoot is the
-whole point - a spring that only ever approaches its target is an ease wearing
-a spring's name.
+the depth cues and the icon all run on `bouncy`, which crosses its target and
+comes back: the gap opens to about 17.5px before settling at 16, and the panel
+passes its content height by a tenth before dropping onto it. That overshoot is
+the whole point - a spring that only ever approaches its target is an ease
+wearing a spring's name.
 
-The panel's text is the exception, on `smooth`. It rides the card rather than
-bouncing with it, so a line of copy never lands, backs up and lands again while
-you are reading it.
+The panel's text runs on `smooth`, which arrives later and lands softer, so the
+copy settles into a card that is already there rather than riding it down.
 
 Colour is out of it entirely. Borders and the hover tint are still CSS
-transitions on `ease-standard` at `duration-middle`, because nothing about a
+transitions on `ease-standard` at `duration-slow`, because nothing about a
 colour fade benefits from momentum.
 
 ## Options
 
 `MorphAccordion` takes three props beyond Base UI's own.
 
-| Prop        | Default | Effect                                                     |
-| ----------- | ------- | ---------------------------------------------------------- |
-| `hasBorder` | `true`  | Divides rows that are both closed.                         |
-| `scale`     | `false` | Shrinks the rows that stayed closed while one row is open. |
-| `gap`       | `16`    | Pixels a neighbouring row moves clear of the open one.     |
+| Prop        | Default | Effect                                                  |
+| ----------- | ------- | ------------------------------------------------------- |
+| `hasBorder` | `true`  | Divides rows that are both closed.                      |
+| `depth`     | `false` | Pushes the rows that stayed closed into the background. |
+| `gap`       | `16`    | Pixels a neighbouring row moves clear of the open one.  |
 
 <ComponentPreview name="morph-accordion-plain" />
 
@@ -86,9 +85,14 @@ both sides of the gap - stays painted. Only the divider between two closed rows
 goes away, so the stack starts as one blank card and gains its seams as it
 splits.
 
-`scale` is the flat cousin of the `translateZ` variant in the original pen: the
-rows that stayed closed drop to `0.96`, which reads as the open card coming
-forward rather than the others receding.
+`depth` is the flat cousin of the `translateZ` variant in the original pen. The
+rows that stayed closed drop to `0.96` scale, `0.65` opacity and `1.5px` of
+blur - three cues for one impression, because things further away are smaller,
+dimmer and outside the focal plane at the same time. Any one of them on its own
+reads as a state change rather than as distance.
+
+Those rows stay clickable while they are blurred, so keep it for stacks where
+the closed rows are short labels. It is off by default.
 
 `hasBorder` still resolves to a custom property on the root, so you can set it
 through `className` instead:

@@ -7,7 +7,7 @@ import {
 
 export function MorphAccordionPlainDemo() {
   return (
-    <MorphAccordion className="my-6 max-w-85" hasBorder={false} scale>
+    <MorphAccordion className="my-6 max-w-85" hasBorder={false} depth>
       <MorphAccordionItem>
         <MorphAccordionTrigger>
           Where did the dividers go?
@@ -19,10 +19,10 @@ export function MorphAccordionPlainDemo() {
       </MorphAccordionItem>
 
       <MorphAccordionItem>
-        <MorphAccordionTrigger>What is scale doing?</MorphAccordionTrigger>
+        <MorphAccordionTrigger>What is depth doing?</MorphAccordionTrigger>
         <MorphAccordionPanel>
-          The rows that stayed closed shrink slightly, so the open card sits in
-          front of them rather than among them.
+          The rows that stayed closed shrink, dim and blur slightly, so the open
+          card sits in front of them rather than among them.
         </MorphAccordionPanel>
       </MorphAccordionItem>
 
