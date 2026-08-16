@@ -1,27 +1,16 @@
 "use client";
 
-import type * as React from "react";
-
 import { Accordion as Primitive } from "@base-ui/react/accordion";
+import { ArrowDown01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 import { cn } from "@poise-ui/shared";
-
-/**
- * Panel height is animated off Base UI's `--accordion-panel-height` variable
- * rather than JS, so the transition survives being copied into a project that
- * has no motion library installed.
- */
-const PANEL_TRANSITION =
-  "transition-[height] duration-[var(--poise-duration-base)] ease-[var(--poise-ease-standard)]";
 
 function Accordion({ className, ...props }: Primitive.Root.Props) {
   return (
     <Primitive.Root
       data-slot="accordion"
-      className={cn(
-        "w-full divide-y divide-border rounded-md border border-border",
-        className,
-      )}
+      className={cn("divide-border w-full divide-y", className)}
       {...props}
     />
   );
@@ -31,22 +20,16 @@ function AccordionItem({ className, ...props }: Primitive.Item.Props) {
   return (
     <Primitive.Item
       data-slot="accordion-item"
-      className={cn("overflow-hidden", className)}
+      className={cn("py-1", className)}
       {...props}
     />
   );
 }
 
 export type AccordionTriggerProps = Primitive.Trigger.Props & {
-  /** Class names for the `<h3>` that wraps the trigger button. */
   headerClassName?: string;
 };
 
-/**
- * Header and Trigger are collapsed into one component: the header exists only
- * to carry the heading role, and splitting it would make every call site
- * repeat the same two-element pair.
- */
 function AccordionTrigger({
   className,
   headerClassName,
@@ -58,20 +41,23 @@ function AccordionTrigger({
       <Primitive.Trigger
         data-slot="accordion-trigger"
         className={cn(
-          "group flex w-full items-center justify-between gap-4 px-4 py-3 text-left text-sm font-medium text-fg",
+          "group text-fg flex w-full cursor-pointer items-center justify-between gap-4 rounded-sm px-4 py-3 text-left text-sm font-medium",
           "hover:not-data-disabled:bg-muted",
-          "focus-visible:relative focus-visible:z-1 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ring",
-          "data-disabled:cursor-not-allowed data-disabled:text-muted-fg",
-          "transition-colors duration-[var(--poise-duration-fast)] ease-[var(--poise-ease-standard)]",
+          "focus-visible:outline-ring outline-2 -outline-offset-1 outline-transparent focus-visible:relative focus-visible:z-1 focus-visible:outline-offset-2",
+          "data-disabled:text-muted-fg data-disabled:cursor-not-allowed",
+          "duration-fast ease-standard transition-[background,outline,outline-offset]",
           className,
         )}
         {...props}
       >
         {children}
-        <ChevronIcon
+        <HugeiconsIcon
+          icon={ArrowDown01Icon}
+          size={16}
+          aria-hidden="true"
           className={cn(
-            "shrink-0 text-muted-fg",
-            "transition-transform duration-[var(--poise-duration-base)] ease-[var(--poise-ease-standard)]",
+            "text-muted-fg shrink-0",
+            "duration-base ease-standard transition-transform",
             "group-data-panel-open:rotate-180",
           )}
         />
@@ -89,34 +75,15 @@ function AccordionPanel({
     <Primitive.Panel
       data-slot="accordion-panel"
       className={cn(
-        "h-[var(--accordion-panel-height)] overflow-hidden text-sm text-muted-fg",
-        "data-starting-style:h-0 data-ending-style:h-0",
-        PANEL_TRANSITION,
+        "text-muted-fg h-(--accordion-panel-height) overflow-hidden text-sm",
+        "data-ending-style:h-0 data-ending-style:translate-y-2 data-ending-style:opacity-0 data-starting-style:h-0 data-starting-style:translate-y-2",
+        "duration-base ease-standard transition-[opacity,height,translate]",
         className,
       )}
       {...props}
     >
-      <div className="px-4 pb-3">{children}</div>
+      <div className="px-4 pt-0.5 pb-2">{children}</div>
     </Primitive.Panel>
-  );
-}
-
-function ChevronIcon(props: React.ComponentProps<"svg">) {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      {...props}
-    >
-      <path d="M4 6l4 4 4-4" />
-    </svg>
   );
 }
 

@@ -63,7 +63,11 @@ export const items: ItemSource[] = [
     type: "registry:ui",
     description:
       "Accordion built on Base UI, with a CSS-driven panel height transition.",
-    dependencies: ["@base-ui/react"],
+    dependencies: [
+      "@base-ui/react",
+      "@hugeicons/react",
+      "@hugeicons/core-free-icons",
+    ],
     registryDependencies: ["shared/tokens", "shared/lib-utils"],
     files: [
       {
