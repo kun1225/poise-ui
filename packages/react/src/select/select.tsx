@@ -1,7 +1,11 @@
 "use client";
 
 import { Select as Primitive } from "@base-ui/react/select";
-import { ArrowDown01Icon, Tick02Icon } from "@hugeicons/core-free-icons";
+import {
+  ArrowDown01Icon,
+  ArrowUp01Icon,
+  Tick02Icon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { cn } from "@poise-ui/shared";
 import type * as React from "react";
@@ -98,16 +102,18 @@ function SelectContent({
         <Primitive.Popup
           data-slot="select-content"
           className={cn(
-            "border-border bg-bg text-fg min-w-(--anchor-width) rounded-lg border p-1 shadow-lg",
+            "border-border bg-bg text-fg relative min-w-(--anchor-width) rounded-lg border p-1 shadow-lg",
             "max-h-[min(18rem,var(--available-height))] scroll-py-1 overflow-y-auto overscroll-contain",
             "duration-fast ease-standard origin-(--transform-origin) transition-[opacity,scale]",
-            "data-starting-style:scale-94 data-starting-style:opacity-0",
-            "data-ending-style:duration-instant data-ending-style:scale-94 data-ending-style:opacity-0",
+            "data-starting-style:scale-95 data-starting-style:opacity-0",
+            "data-ending-style:duration-instant data-ending-style:scale-95 data-ending-style:opacity-0",
             className,
           )}
           {...props}
         >
+          <SelectScrollUpButton />
           <Primitive.List>{children}</Primitive.List>
+          <SelectScrollDownButton />
         </Primitive.Popup>
       </Primitive.Positioner>
     </Primitive.Portal>
@@ -178,6 +184,44 @@ function SelectSeparator({ className, ...props }: Primitive.Separator.Props) {
   );
 }
 
+function SelectScrollUpButton({
+  className,
+  ...props
+}: React.ComponentProps<typeof Primitive.ScrollUpArrow>) {
+  return (
+    <Primitive.ScrollUpArrow
+      data-slot="select-scroll-up-button"
+      className={cn(
+        "text-muted-fg bg-bg top-0 flex w-full cursor-default items-center justify-center py-1",
+        "[&_svg]:size-4",
+        className,
+      )}
+      {...props}
+    >
+      <HugeiconsIcon icon={ArrowUp01Icon} size={16} aria-hidden="true" />
+    </Primitive.ScrollUpArrow>
+  );
+}
+
+function SelectScrollDownButton({
+  className,
+  ...props
+}: React.ComponentProps<typeof Primitive.ScrollDownArrow>) {
+  return (
+    <Primitive.ScrollDownArrow
+      data-slot="select-scroll-down-button"
+      className={cn(
+        "text-muted-fg bg-bg bottom-0 flex w-full cursor-default items-center justify-center py-1",
+        "[&_svg]:size-4",
+        className,
+      )}
+      {...props}
+    >
+      <HugeiconsIcon icon={ArrowDown01Icon} size={16} aria-hidden="true" />
+    </Primitive.ScrollDownArrow>
+  );
+}
+
 export {
   Select,
   SelectContent,
@@ -185,5 +229,7 @@ export {
   SelectGroupLabel,
   SelectItem,
   SelectSeparator,
+  SelectScrollDownButton,
+  SelectScrollUpButton,
   SelectTrigger,
 };
