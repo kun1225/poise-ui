@@ -1,0 +1,70 @@
+---
+title: Select
+description: A button that opens a list of options and reports back the one you pick.
+---
+
+<ComponentPreview name="select" />
+
+## Usage
+
+```tsx
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+
+<Select defaultValue="smooth" name="spring">
+  <SelectTrigger placeholder="Pick a spring" />
+  <SelectContent>
+    <SelectItem value="snappy">Snappy</SelectItem>
+    <SelectItem value="smooth">Smooth</SelectItem>
+  </SelectContent>
+</Select>;
+```
+
+`SelectTrigger` renders the value and the chevron for you, so it takes no
+children. Every `SelectItem` needs a `value`; give the root a `name` to submit
+one with a form.
+
+An item whose children are not a string cannot be shown on the trigger or
+matched by typeahead. Pass `label` on those items to say what the text is.
+
+## Options
+
+Beyond Base UI's own props:
+
+| Component       | Prop                  | Default     | Effect                                          |
+| --------------- | --------------------- | ----------- | ----------------------------------------------- |
+| `SelectTrigger` | `placeholder`         | `"Select…"` | Shown until something is selected.              |
+| `SelectContent` | `side`                | `"bottom"`  | Which edge of the trigger the popup opens from. |
+| `SelectContent` | `align`               | `"start"`   | How the popup lines up along that edge.         |
+| `SelectContent` | `sideOffset`          | `6`         | Pixels between the trigger and the popup.       |
+| `SelectContent` | `positionerClassName` | —           | Classes for the positioner, which owns z-index. |
+
+Group related items and separate the groups. Every group needs its own
+`SelectGroupLabel` inside it — that is what Base UI reads to label the group.
+
+<ComponentPreview name="select-groups" />
+
+The popup is never taller than 18rem or the space actually available below the
+trigger, whichever is smaller, and scrolls past that. It flips above the
+trigger when there is no room, and grows from whichever edge it landed on.
+
+## Anatomy
+
+```text
+Select               Base UI Select.Root
+  SelectTrigger        Base UI Select.Trigger + Select.Value + Select.Icon
+  SelectContent        Base UI Select.Portal + Select.Positioner + Select.Popup + Select.List
+    SelectGroup        Base UI Select.Group
+      SelectGroupLabel Base UI Select.GroupLabel
+    SelectItem         Base UI Select.Item + Select.ItemIndicator + Select.ItemText
+    SelectSeparator    Base UI Select.Separator
+```
+
+`SelectContent` is four Base UI parts in one, because none of them is useful
+on its own and the popup has to sit inside all four to be positioned at all.
+The checkmark sits in an absolute slot rather than the item's flex row, so a
+row gaining or losing it never resizes the popup.

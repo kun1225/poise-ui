@@ -104,4 +104,24 @@ export const items: ItemSource[] = [
       },
     ],
   },
+  {
+    name: "select",
+    target: "react",
+    type: "registry:ui",
+    description:
+      "Select built on Base UI, with a popup that grows from the trigger and an animated checkmark.",
+    dependencies: [
+      "@base-ui/react",
+      "@hugeicons/react",
+      "@hugeicons/core-free-icons",
+    ],
+    registryDependencies: ["shared/tokens", "shared/lib-utils"],
+    files: [
+      {
+        src: "packages/react/src/select/select.tsx",
+        path: "components/ui/select.tsx",
+        type: "registry:ui",
+      },
+    ],
+  },
 ];

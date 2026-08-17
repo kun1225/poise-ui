@@ -1,11 +1,9 @@
 import { CopyButton } from "@/components/copy-button";
 
-export function InstallCommand({ component }: { component: string }) {
-  const command = `npx poise-ui add ${component}`;
-
+export function InstallCommand({ command }: { command: string }) {
   return (
-    <div className="my-6 flex items-center justify-between gap-4 rounded-lg border border-border px-4 py-3">
-      <code className="text-sm">{command}</code>
+    <div className="border-border my-6 flex items-center justify-between gap-4 rounded-lg border px-4 py-3">
+      <code className="overflow-x-auto text-sm">{command}</code>
       <CopyButton value={command} />
     </div>
   );

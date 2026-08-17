@@ -5,6 +5,10 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
+    "@poise-ui/docs#build": {
+      "dependsOn": ["^build", "@poise-ui/registry#registry"],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
     "registry": {
       "dependsOn": ["^build"],
       "inputs": ["../packages/**/src/**"],

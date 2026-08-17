@@ -5,14 +5,6 @@ description: A stack of rows that splits apart, so the open one becomes a card o
 
 <ComponentPreview name="morph-accordion" />
 
-## Installation
-
-<InstallCommand component="morph-accordion" />
-
-This copies `morph-accordion.tsx` into your components directory, along with
-the design tokens, the `cn` helper and the shared spring vocabulary in
-`lib/motion.ts` that it depends on. Edit it in place.
-
 ## Usage
 
 ```tsx
@@ -31,41 +23,9 @@ import {
 </MorphAccordion>;
 ```
 
-The trailing plus rotates 225 degrees into a cross while the panel is open.
-
-## The morph
-
-Closed, the rows read as one card. Opening a row detaches it: it rounds on all
-four corners, and the rows above and below slide `1rem` clear and seal
-themselves into two cards of their own.
-
-The gap is a transform, not a margin, so the row you clicked never moves - only
-its neighbours do. Two things follow from that:
-
-- Those neighbours move **outside** the accordion's own box. Leave `1rem` of
-  room above and below it, or the effect will overlap whatever sits alongside.
-- Nothing reflows. Every border is present at all times and only its colour
-  changes, so the choreography never shifts layout by the width of a border.
-
-Set `gap` on the root to change the distance, in pixels:
-
-```tsx
-<MorphAccordion gap={40}>
-```
-
-Everything that moves is a Motion spring from `lib/motion`. The card, the gap,
-the depth cues and the icon all run on `bouncy`, which crosses its target and
-comes back: the gap opens to about 17.5px before settling at 16, and the panel
-passes its content height by a tenth before dropping onto it. That overshoot is
-the whole point - a spring that only ever approaches its target is an ease
-wearing a spring's name.
-
-The panel's text runs on `smooth`, which arrives later and lands softer, so the
-copy settles into a card that is already there rather than riding it down.
-
-Colour is out of it entirely. Borders and the hover tint are still CSS
-transitions on `ease-standard` at `duration-slow`, because nothing about a
-colour fade benefits from momentum.
+The gap between rows is a transform, not a margin, so neighbouring rows move
+**outside** the accordion's own box. Leave `1rem` of room above and below it,
+or the effect will overlap whatever sits alongside.
 
 ## Options
 
@@ -79,27 +39,18 @@ colour fade benefits from momentum.
 
 <ComponentPreview name="morph-accordion-plain" />
 
-Turning `hasBorder` off does not strip the borders that make the morph
-readable. Every edge where a card has to seal - the two ends of the stack, and
-both sides of the gap - stays painted. Only the divider between two closed rows
-goes away, so the stack starts as one blank card and gains its seams as it
-splits.
-
-`depth` is the flat cousin of the `translateZ` variant in the original pen. The
-rows that stayed closed drop to `0.96` scale, `0.65` opacity and `1.5px` of
-blur - three cues for one impression, because things further away are smaller,
-dimmer and outside the focal plane at the same time. Any one of them on its own
-reads as a state change rather than as distance.
-
-Those rows stay clickable while they are blurred, so keep it for stacks where
-the closed rows are short labels. It is off by default.
-
-`hasBorder` still resolves to a custom property on the root, so you can set it
-through `className` instead:
+Turning `hasBorder` off only removes the divider between two closed rows. Every
+edge where a card has to seal stays painted, so the stack starts as one blank
+card and gains its seams as it splits. It resolves to a custom property, so it
+can also be set through `className`:
 
 ```tsx
 <MorphAccordion className="[--morph-divider:transparent]">
 ```
+
+`depth` drops the closed rows to `0.96` scale, `0.65` opacity and `1.5px` of
+blur. Those rows stay clickable while they are blurred, so keep it for stacks
+whose closed rows are short labels.
 
 ## Anatomy
 
@@ -110,10 +61,10 @@ MorphAccordion          Base UI Accordion.Root
     MorphAccordionPanel   Base UI Accordion.Panel
 ```
 
-Base UI decides when to unmount a panel by watching for a CSS transition on it,
-and there is none to find here. `MorphAccordionPanel` therefore keeps its panel
-mounted and marks it `inert` while closed, so Motion owns the exit and a closed
-panel still stays out of the tab order and the accessibility tree.
+Base UI decides when to unmount a panel by watching for a CSS transition, and
+there is none here. `MorphAccordionPanel` therefore keeps its panel mounted and
+marks it `inert` while closed, so Motion owns the exit and a closed panel still
+stays out of the tab order and the accessibility tree.
 
 Adapted from [a pen by Jhey Tompkins](https://codepen.io/jh3y/pen/QwyYoVr),
 rebuilt on Base UI for the accordion semantics and Motion for the movement.

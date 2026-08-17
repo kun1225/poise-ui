@@ -4,6 +4,8 @@ import { AccordionDemo } from "@/components/demos/accordion-demo";
 import { AccordionStaggerDemo } from "@/components/demos/accordion-stagger-demo";
 import { MorphAccordionDemo } from "@/components/demos/morph-accordion-demo";
 import { MorphAccordionPlainDemo } from "@/components/demos/morph-accordion-plain-demo";
+import { SelectDemo } from "@/components/demos/select-demo";
+import { SelectGroupsDemo } from "@/components/demos/select-groups-demo";
 import { PreviewPanel } from "@/components/preview-panel";
 
 /** Statically scoped so Turbopack traces only this folder, not the project. */
@@ -23,6 +25,11 @@ const demos = {
   "morph-accordion-plain": {
     node: <MorphAccordionPlainDemo />,
     src: "morph-accordion-plain-demo.tsx",
+  },
+  select: { node: <SelectDemo />, src: "select-demo.tsx" },
+  "select-groups": {
+    node: <SelectGroupsDemo />,
+    src: "select-groups-demo.tsx",
   },
 } as const;
 
