@@ -35,22 +35,82 @@ matched by typeahead. Pass `label` on those items to say what the text is.
 
 Beyond Base UI's own props:
 
-| Component       | Prop                  | Default     | Effect                                          |
-| --------------- | --------------------- | ----------- | ----------------------------------------------- |
-| `SelectTrigger` | `placeholder`         | `"Select…"` | Shown until something is selected.              |
-| `SelectContent` | `side`                | `"bottom"`  | Which edge of the trigger the popup opens from. |
-| `SelectContent` | `align`               | `"start"`   | How the popup lines up along that edge.         |
-| `SelectContent` | `sideOffset`          | `6`         | Pixels between the trigger and the popup.       |
-| `SelectContent` | `positionerClassName` | —           | Classes for the positioner, which owns z-index. |
+| Component       | Prop                   | Default     | Effect                                             |
+| --------------- | ---------------------- | ----------- | -------------------------------------------------- |
+| `SelectTrigger` | `placeholder`          | `"Select…"` | Shown until something is selected.                 |
+| `SelectContent` | `side`                 | `"bottom"`  | Which edge of the trigger the popup opens from.    |
+| `SelectContent` | `align`                | `"start"`   | How the popup lines up along that edge.            |
+| `SelectContent` | `sideOffset`           | `6`         | Pixels between the trigger and the popup.          |
+| `SelectContent` | `alignItemWithTrigger` | `false`     | Opens over the trigger, selected item on its text. |
+| `SelectContent` | `positionerClassName`  | —           | Classes for the positioner, which owns z-index.    |
+
+### placeholder
+
+`placeholder` is what the trigger shows until something is selected, dimmed by
+the `data-placeholder` Base UI puts on the trigger. The preview at the top of
+this page starts empty, so it is showing one.
+
+### side, align and sideOffset
+
+`side` picks the edge of the trigger the popup opens from, `align` lines it up
+along that edge, and `sideOffset` is the pixels between the two. The popup
+grows from whichever edge it landed on, and flips to the opposite side when
+there is no room.
+
+<ComponentPreview name="select-placement" />
+
+`alignOffset` shifts the popup along that same edge and passes straight through
+to Base UI, which is why it is not in the table above.
+
+### alignItemWithTrigger
+
+Turn it on and the popup opens _over_ the trigger, positioned so the selected
+item's text lands on the trigger's own text — the native `<select>` behaviour.
+Base UI drives the popup's height itself in that mode, which is why the popup
+drops its own `max-height` and its open transition when it is active.
+
+<ComponentPreview name="select-align-item" />
+
+It defaults to `false`, unlike Base UI, so that `side` and `align` work as the
+table says. Turning it on **ignores both of them**, along with `sideOffset`.
+
+Base UI also drops back to ordinary positioning on its own, in three cases: the
+popup was opened by touch, the trigger is within 20px of the top or bottom of
+the viewport, or there is too little room left to align without squashing the
+popup. `min-height` on the positioner is what sets "too little" — a smaller one
+falls back less often:
+
+```tsx
+<SelectContent alignItemWithTrigger positionerClassName="min-h-16">
+```
+
+Style the two modes apart with `data-side`, which is `"none"` while align mode
+is the one in effect.
+
+### positionerClassName
+
+The positioner sits between the portal and the popup and owns z-index, so a
+popup that lands behind something else is fixed there rather than on
+`className`, which styles the popup itself.
+
+```tsx
+<SelectContent positionerClassName="z-100">
+```
+
+### Groups
 
 Group related items and separate the groups. Every group needs its own
 `SelectGroupLabel` inside it — that is what Base UI reads to label the group.
 
 <ComponentPreview name="select-groups" />
 
-The popup is never taller than 18rem or the space actually available below the
-trigger, whichever is smaller, and scrolls past that. It flips above the
-trigger when there is no room, and grows from whichever edge it landed on.
+### Scrolling
+
+The popup is never taller than 18rem or the space actually available on the
+side it landed on, whichever is smaller, and scrolls past that. Arrows appear
+at whichever end has more list to reach.
+
+<ComponentPreview name="select-scroll" />
 
 ## Anatomy
 

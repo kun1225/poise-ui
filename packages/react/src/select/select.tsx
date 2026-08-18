@@ -8,9 +8,17 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { cn } from "@poise-ui/shared";
-import type * as React from "react";
+import * as React from "react";
 
 const Select = Primitive.Root;
+
+type SelectOverlayContextValue = {
+  registerHighlightedItem: (element: HTMLElement | null) => void;
+};
+
+const SelectOverlayContext = React.createContext<
+  SelectOverlayContextValue | undefined
+>(undefined);
 
 export type SelectTriggerProps = Omit<Primitive.Trigger.Props, "children"> & {
   placeholder?: React.ReactNode;
@@ -66,7 +74,7 @@ function SelectTrigger({
 export type SelectContentProps = Primitive.Popup.Props &
   Pick<
     Primitive.Positioner.Props,
-    "align" | "alignOffset" | "side" | "sideOffset"
+    "align" | "alignItemWithTrigger" | "alignOffset" | "side" | "sideOffset"
   > & {
     /** The positioner sits between the portal and the popup, and owns z-index. */
     positionerClassName?: string;
@@ -76,19 +84,37 @@ export type SelectContentProps = Primitive.Popup.Props &
  * Portal, positioner, popup and list in one - none of the four is useful alone,
  * and the popup has to sit inside all of them to be positioned at all.
  *
- * `alignItemWithTrigger` is off: that mode overlaps the trigger and drives the
- * popup's height itself, which fights both the transition and `align`.
+ * `alignItemWithTrigger` defaults to off rather than Base UI's on, because that
+ * mode drives the popup's height itself and ignores `side` and `align`. It is a
+ * prop, not a decision made here - `data-side="none"` is the hook for the
+ * styling it needs, and the popup carries those overrides below.
  */
 function SelectContent({
   className,
   positionerClassName,
   children,
+  alignItemWithTrigger = false,
   side = "bottom",
   sideOffset = 6,
   align = "start",
   alignOffset = 0,
   ...props
 }: SelectContentProps) {
+  const popupRef = React.useRef<HTMLDivElement>(null);
+  const [highlightedItem, setHighlightedItem] =
+    React.useState<HTMLElement | null>(null);
+
+  const overlayContext = React.useMemo(
+    () => ({
+      registerHighlightedItem: (element: HTMLElement | null) => {
+        setHighlightedItem((current) =>
+          element || current === element ? element : current,
+        );
+      },
+    }),
+    [],
+  );
+
   return (
     <Primitive.Portal>
       <Primitive.Positioner
@@ -96,23 +122,45 @@ function SelectContent({
         sideOffset={sideOffset}
         align={align}
         alignOffset={alignOffset}
-        alignItemWithTrigger={false}
+        alignItemWithTrigger={alignItemWithTrigger}
         className={cn("isolate z-50", positionerClassName)}
       >
         <Primitive.Popup
+          ref={popupRef}
           data-slot="select-content"
           className={cn(
             "border-border bg-bg text-fg relative min-w-(--anchor-width) rounded-lg border p-1 shadow-lg",
-            "max-h-[min(18rem,var(--available-height))] scroll-py-1 overflow-y-auto overscroll-contain",
+            "max-h-[min(18rem,var(--available-height))] overflow-hidden",
             "duration-fast ease-standard origin-(--transform-origin) transition-[opacity,scale]",
             "data-starting-style:scale-95 data-starting-style:opacity-0",
             "data-ending-style:duration-instant data-ending-style:scale-95 data-ending-style:opacity-0",
+            // `data-side="none"` is align mode. Base UI gives the popup the
+            // positioner's full height there, so a max-height of its own would
+            // crop it and pull the aligned item off the trigger; the list keeps
+            // its own cap and goes on being the scroller. The open transition
+            // goes too - it would drag the item away from the text it is
+            // supposed to be sitting on.
+            "data-[side=none]:max-h-none",
+            "data-[side=none]:data-starting-style:scale-100 data-[side=none]:data-starting-style:opacity-100",
+            "data-[side=none]:data-starting-style:transition-none data-[side=none]:data-ending-style:transition-none",
             className,
           )}
           {...props}
         >
           <SelectScrollUpButton />
-          <Primitive.List>{children}</Primitive.List>
+          <SelectItemOverlay
+            popupRef={popupRef}
+            item={highlightedItem}
+            className="bg-muted"
+          />
+          <SelectOverlayContext.Provider value={overlayContext}>
+            <Primitive.List
+              data-slot="select-list"
+              className="relative z-10 max-h-[min(18rem,var(--available-height))] scroll-py-2 overflow-y-auto overscroll-contain py-1"
+            >
+              {children}
+            </Primitive.List>
+          </SelectOverlayContext.Provider>
           <SelectScrollDownButton />
         </Primitive.Popup>
       </Primitive.Positioner>
@@ -144,25 +192,68 @@ function SelectGroupLabel({ className, ...props }: Primitive.GroupLabel.Props) {
  * The checkmark sits in an absolute slot rather than the item's flex row, so a
  * row gaining or losing it never resizes the popup.
  */
-function SelectItem({ className, children, ...props }: Primitive.Item.Props) {
+function SelectItem({
+  className,
+  children,
+  label,
+  ...props
+}: Primitive.Item.Props) {
   return (
     <Primitive.Item
+      {...props}
+      label={label ?? (typeof children === "string" ? children : undefined)}
       data-slot="select-item"
       className={cn(
         "text-fg relative flex cursor-pointer items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm select-none",
-        "data-highlighted:bg-muted",
         "data-disabled:text-muted-fg data-disabled:pointer-events-none",
         "duration-fast ease-standard transition-colors",
         className,
       )}
+      render={(renderProps, state) => (
+        <SelectItemSurface {...renderProps} highlighted={state.highlighted}>
+          {children}
+        </SelectItemSurface>
+      )}
+    />
+  );
+}
+
+function SelectItemSurface({
+  children,
+  highlighted,
+  ...props
+}: React.ComponentPropsWithRef<"div"> & {
+  highlighted: boolean;
+}) {
+  const itemRef = React.useRef<HTMLDivElement>(null);
+  const overlayContext = React.useContext(SelectOverlayContext);
+
+  React.useLayoutEffect(() => {
+    const element = itemRef.current;
+    if (!element || !overlayContext) return;
+
+    if (highlighted) overlayContext.registerHighlightedItem(element);
+
+    return () => {
+      overlayContext.registerHighlightedItem(null);
+    };
+  }, [highlighted, overlayContext]);
+
+  return (
+    <div
       {...props}
+      ref={(element) => {
+        itemRef.current = element;
+        if (typeof props.ref === "function") props.ref(element);
+        else if (props.ref) props.ref.current = element;
+      }}
     >
-      <Primitive.ItemText className="min-w-0 flex-1 truncate">
+      <Primitive.ItemText className="relative z-10 min-w-0 flex-1 truncate">
         {children}
       </Primitive.ItemText>
       <Primitive.ItemIndicator
         className={cn(
-          "text-muted-fg absolute right-2 flex items-center",
+          "text-muted-fg absolute right-2 z-10 flex items-center",
           "duration-base ease-out-back transition-[opacity,scale]",
           "data-starting-style:scale-50 data-starting-style:opacity-0",
           "data-ending-style:scale-50 data-ending-style:opacity-0",
@@ -170,7 +261,72 @@ function SelectItem({ className, children, ...props }: Primitive.Item.Props) {
       >
         <HugeiconsIcon icon={Tick02Icon} size={14} aria-hidden="true" />
       </Primitive.ItemIndicator>
-    </Primitive.Item>
+    </div>
+  );
+}
+
+function SelectItemOverlay({
+  popupRef,
+  item,
+  className,
+}: {
+  popupRef: React.RefObject<HTMLDivElement | null>;
+  item: HTMLElement | null;
+  className: string;
+}) {
+  const [style, setStyle] = React.useState<React.CSSProperties>();
+
+  React.useLayoutEffect(() => {
+    const popup = popupRef.current;
+    if (!popup || !item) {
+      setStyle(undefined);
+      return;
+    }
+
+    const scrollContainer =
+      item.closest<HTMLElement>('[data-slot="select-list"]') ?? popup;
+
+    const update = () => {
+      const popupRect = popup.getBoundingClientRect();
+      const itemRect = item.getBoundingClientRect();
+
+      setStyle({
+        height: itemRect.height,
+        left: itemRect.left - popupRect.left + popup.scrollLeft,
+        top: itemRect.top - popupRect.top + popup.scrollTop,
+        transform: "translateZ(0)",
+        width: itemRect.width,
+      });
+    };
+
+    update();
+    scrollContainer.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+
+    const resizeObserver = new ResizeObserver(update);
+    resizeObserver.observe(popup);
+    resizeObserver.observe(scrollContainer);
+    resizeObserver.observe(item);
+
+    return () => {
+      scrollContainer.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+      resizeObserver.disconnect();
+    };
+  }, [item, popupRef]);
+
+  if (!style) return null;
+
+  return (
+    <div
+      aria-hidden="true"
+      className={cn(
+        "pointer-events-none absolute z-0 rounded-sm",
+        "duration-fast ease-standard transition-[height,left,top,width]",
+        className,
+      )}
+      style={style}
+    />
   );
 }
 
@@ -192,7 +348,7 @@ function SelectScrollUpButton({
     <Primitive.ScrollUpArrow
       data-slot="select-scroll-up-button"
       className={cn(
-        "text-muted-fg bg-bg top-0 flex w-full cursor-default items-center justify-center py-1",
+        "text-muted-fg bg-bg top-0 z-20 flex w-full cursor-default items-center justify-center",
         "[&_svg]:size-4",
         className,
       )}
@@ -211,7 +367,7 @@ function SelectScrollDownButton({
     <Primitive.ScrollDownArrow
       data-slot="select-scroll-down-button"
       className={cn(
-        "text-muted-fg bg-bg bottom-0 flex w-full cursor-default items-center justify-center py-1",
+        "text-muted-fg bg-bg bottom-0 z-20 flex w-full cursor-default items-center justify-center",
         "[&_svg]:size-4",
         className,
       )}
