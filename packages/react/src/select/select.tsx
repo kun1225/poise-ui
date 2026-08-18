@@ -13,7 +13,8 @@ import * as React from "react";
 const Select = Primitive.Root;
 
 type SelectOverlayContextValue = {
-  registerHighlightedItem: (element: HTMLElement | null) => void;
+  registerHighlightedItem: (element: HTMLElement) => void;
+  unregisterHighlightedItem: (element: HTMLElement) => void;
 };
 
 const SelectOverlayContext = React.createContext<
@@ -106,10 +107,11 @@ function SelectContent({
 
   const overlayContext = React.useMemo(
     () => ({
-      registerHighlightedItem: (element: HTMLElement | null) => {
-        setHighlightedItem((current) =>
-          element || current === element ? element : current,
-        );
+      registerHighlightedItem: (element: HTMLElement) => {
+        setHighlightedItem(element);
+      },
+      unregisterHighlightedItem: (element: HTMLElement) => {
+        setHighlightedItem((current) => (current === element ? null : current));
       },
     }),
     [],
@@ -126,42 +128,42 @@ function SelectContent({
         className={cn("isolate z-50", positionerClassName)}
       >
         <Primitive.Popup
-          ref={popupRef}
-          data-slot="select-content"
           className={cn(
-            "border-border bg-bg text-fg relative min-w-(--anchor-width) rounded-lg border p-1 shadow-lg",
-            "max-h-[min(18rem,var(--available-height))] overflow-hidden",
+            "group/select max-h-[min(18rem,var(--available-height))] min-w-(--anchor-width)",
             "duration-fast ease-standard origin-(--transform-origin) transition-[opacity,scale]",
             "data-starting-style:scale-95 data-starting-style:opacity-0",
             "data-ending-style:duration-instant data-ending-style:scale-95 data-ending-style:opacity-0",
-            // `data-side="none"` is align mode. Base UI gives the popup the
-            // positioner's full height there, so a max-height of its own would
-            // crop it and pull the aligned item off the trigger; the list keeps
-            // its own cap and goes on being the scroller. The open transition
-            // goes too - it would drag the item away from the text it is
-            // supposed to be sitting on.
             "data-[side=none]:max-h-none",
             "data-[side=none]:data-starting-style:scale-100 data-[side=none]:data-starting-style:opacity-100",
-            "data-[side=none]:data-starting-style:transition-none data-[side=none]:data-ending-style:transition-none",
-            className,
+            "data-[side=none]:data-ending-style:transition-none data-[side=none]:data-starting-style:transition-none",
           )}
           {...props}
         >
-          <SelectScrollUpButton />
-          <SelectItemOverlay
-            popupRef={popupRef}
-            item={highlightedItem}
-            className="bg-muted"
-          />
-          <SelectOverlayContext.Provider value={overlayContext}>
-            <Primitive.List
-              data-slot="select-list"
-              className="relative z-10 max-h-[min(18rem,var(--available-height))] scroll-py-2 overflow-y-auto overscroll-contain py-1"
-            >
-              {children}
-            </Primitive.List>
-          </SelectOverlayContext.Provider>
-          <SelectScrollDownButton />
+          <div
+            ref={popupRef}
+            data-slot="select-content"
+            className={cn(
+              "border-border bg-bg text-fg relative max-h-[inherit] overflow-hidden rounded-lg border p-1 shadow-lg",
+              "group-data-[side=none]/select:h-full group-data-[side=none]/select:max-h-none",
+              className,
+            )}
+          >
+            <SelectScrollUpButton />
+            <SelectItemOverlay
+              popupRef={popupRef}
+              item={highlightedItem}
+              className="bg-muted"
+            />
+            <SelectOverlayContext.Provider value={overlayContext}>
+              <Primitive.List
+                data-slot="select-list"
+                className="relative z-10 max-h-[min(18rem,var(--available-height))] scroll-py-2 overflow-y-auto overscroll-contain py-1"
+              >
+                {children}
+              </Primitive.List>
+            </SelectOverlayContext.Provider>
+            <SelectScrollDownButton />
+          </div>
         </Primitive.Popup>
       </Primitive.Positioner>
     </Primitive.Portal>
@@ -235,7 +237,7 @@ function SelectItemSurface({
     if (highlighted) overlayContext.registerHighlightedItem(element);
 
     return () => {
-      overlayContext.registerHighlightedItem(null);
+      overlayContext.unregisterHighlightedItem(element);
     };
   }, [highlighted, overlayContext]);
 
@@ -283,19 +285,21 @@ function SelectItemOverlay({
       return;
     }
 
-    const scrollContainer =
-      item.closest<HTMLElement>('[data-slot="select-list"]') ?? popup;
+    const scrollContainer = item.closest<HTMLElement>(
+      '[data-slot="select-list"]',
+    );
+    if (!scrollContainer) return;
 
     const update = () => {
-      const popupRect = popup.getBoundingClientRect();
-      const itemRect = item.getBoundingClientRect();
-
       setStyle({
-        height: itemRect.height,
-        left: itemRect.left - popupRect.left + popup.scrollLeft,
-        top: itemRect.top - popupRect.top + popup.scrollTop,
+        height: item.offsetHeight,
+        left: scrollContainer.offsetLeft + item.offsetLeft,
+        top:
+          scrollContainer.offsetTop +
+          item.offsetTop -
+          scrollContainer.scrollTop,
         transform: "translateZ(0)",
-        width: itemRect.width,
+        width: item.offsetWidth,
       });
     };
 
