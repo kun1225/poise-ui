@@ -5,9 +5,9 @@ import {
   MorphAccordionTrigger,
 } from "@poise-ui/react/morph-accordion";
 
-export function MorphAccordionPlainDemo() {
+export function MorphAccordionNoBorderDemo() {
   return (
-    <MorphAccordion className="my-6 max-w-85" hasBorder={false} depth>
+    <MorphAccordion className="my-6 max-w-85" hasBorder={false}>
       <MorphAccordionItem>
         <MorphAccordionTrigger>
           Where did the dividers go?
@@ -19,18 +19,18 @@ export function MorphAccordionPlainDemo() {
       </MorphAccordionItem>
 
       <MorphAccordionItem>
-        <MorphAccordionTrigger>What is depth doing?</MorphAccordionTrigger>
-        <MorphAccordionPanel>
-          The rows that stayed closed shrink, dim and blur slightly, so the open
-          card sits in front of them rather than among them.
-        </MorphAccordionPanel>
-      </MorphAccordionItem>
-
-      <MorphAccordionItem>
         <MorphAccordionTrigger>What still gets a border?</MorphAccordionTrigger>
         <MorphAccordionPanel>
           Every edge where a card has to seal - the ends of the stack, and both
           sides of the gap.
+        </MorphAccordionPanel>
+      </MorphAccordionItem>
+
+      <MorphAccordionItem>
+        <MorphAccordionTrigger>Can I set it in CSS?</MorphAccordionTrigger>
+        <MorphAccordionPanel>
+          It resolves to `--morph-divider`, so a class can paint the dividers
+          any colour you like.
         </MorphAccordionPanel>
       </MorphAccordionItem>
     </MorphAccordion>
