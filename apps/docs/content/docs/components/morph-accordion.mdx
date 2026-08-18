@@ -37,20 +37,36 @@ or the effect will overlap whatever sits alongside.
 | `depth`     | `false` | Pushes the rows that stayed closed into the background. |
 | `gap`       | `16`    | Pixels a neighbouring row moves clear of the open one.  |
 
-<ComponentPreview name="morph-accordion-plain" />
+### hasBorder
 
 Turning `hasBorder` off only removes the divider between two closed rows. Every
 edge where a card has to seal stays painted, so the stack starts as one blank
-card and gains its seams as it splits. It resolves to a custom property, so it
-can also be set through `className`:
+card and gains its seams as it splits.
+
+<ComponentPreview name="morph-accordion-no-border" />
+
+It resolves to a custom property, so it can also be set through `className` —
+that is the way to recolour the dividers rather than drop them:
 
 ```tsx
 <MorphAccordion className="[--morph-divider:transparent]">
 ```
 
+### depth
+
 `depth` drops the closed rows to `0.96` scale, `0.65` opacity and `1.5px` of
 blur. Those rows stay clickable while they are blurred, so keep it for stacks
 whose closed rows are short labels.
+
+<ComponentPreview name="morph-accordion-depth" />
+
+### gap
+
+`gap` is how far a neighbouring row moves clear of the open one, in pixels. It
+is a transform rather than a margin, so raising it reaches further outside the
+accordion's own box — leave that much room around it.
+
+<ComponentPreview name="morph-accordion-gap" />
 
 ## Anatomy
 
