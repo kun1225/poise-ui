@@ -210,8 +210,7 @@ function MorphItemSurface({
   }, [index, open, reportOpen]);
 
   // Which way the open row shoves this one: 1 down, -1 up, 0 not at all.
-  const push =
-    open || openIndex === null ? 0 : openIndex < index ? 1 : -1;
+  const push = open || openIndex === null ? 0 : openIndex < index ? 1 : -1;
   const receded = depth && push !== 0;
 
   return (
