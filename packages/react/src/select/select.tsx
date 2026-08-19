@@ -280,10 +280,7 @@ function SelectItemOverlay({
 
   React.useLayoutEffect(() => {
     const popup = popupRef.current;
-    if (!popup || !item) {
-      setStyle(undefined);
-      return;
-    }
+    if (!popup || !item) return;
 
     const scrollContainer = item.closest<HTMLElement>(
       '[data-slot="select-list"]',
