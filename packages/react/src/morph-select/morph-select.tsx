@@ -58,7 +58,7 @@ function MorphSelectTrigger({
         // Delay plus duration is the flight exactly: 240 + 180 = 420 in, and
         // 120 + 180 = 300 back out.
         "ease-standard [transition-property:background-color,outline-color,border-color,border-radius]",
-        "[transition-duration:var(--poise-duration-fast),var(--poise-duration-fast),var(--poise-duration-base),var(--poise-duration-base)]",
+        "[transition-duration:var(--poise-duration-fast),var(--poise-duration-fast),var(--poise-duration-slow),var(--poise-duration-slow)]",
         "[transition-delay:0s,0s,var(--poise-duration-middle),var(--poise-duration-middle)]",
 
         "not-data-morph-welded:not-data-popup-open:data-popup-side:[transition-delay:0s,0s,var(--poise-duration-fast),var(--poise-duration-fast)]",
