@@ -7,14 +7,33 @@ import {
   Tick02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { springs } from "@poise-ui/motion";
+import { springToCss } from "@poise-ui/motion/spring-css";
 import { cn } from "@poise-ui/shared";
 import * as React from "react";
+
+/**
+ * The flight out from behind the trigger, as a `linear()` curve.
+ *
+ * A spring rather than an ease, so the panel carries a little past its resting
+ * height and settles back instead of gliding to a stop. Sampled once here: the
+ * geometry has to stay in CSS for Base UI to see the popup animating, so this
+ * is the one way to spring it.
+ *
+ * `smooth` first reaches its target at 420ms, which is the flight the trigger's
+ * seam is already timed against - only the overshoot is new.
+ */
+const MORPH_SPRING = springToCss(springs.smooth);
 
 /** The only two sides that can weld to the trigger. */
 type MorphSide = "top" | "bottom";
 
 /** The gap the popup rests at, handed to CSS so the start pose can undo it. */
-type MorphPopupStyle = React.CSSProperties & { "--morph-gap": string };
+type MorphPopupStyle = React.CSSProperties & {
+  "--morph-gap": string;
+  "--morph-spring-ease": string;
+  "--morph-spring-duration": string;
+};
 
 type MorphOverlayContextValue = {
   registerHighlightedItem: (element: HTMLElement) => void;
@@ -67,7 +86,7 @@ function MorphSelectTrigger({
         // edge lands in the frame it is asked for and the round-out gets the
         // wait. The delay has to be zeroed too, or the weld itself would be
         // scheduled 240ms out - by which time it has already been released.
-        "data-morph-welded:[transition-delay:0s] data-morph-welded:[transition-duration:0s]",
+        "data-morph-welded:[transition-delay:0s] data-morph-welded:duration-0",
         className,
       )}
       {...props}
@@ -206,6 +225,8 @@ function MorphSelectContent({
   const popupStyle: MorphPopupStyle = {
     ...style,
     "--morph-gap": `${sideOffset}px`,
+    "--morph-spring-ease": MORPH_SPRING.easing,
+    "--morph-spring-duration": MORPH_SPRING.duration,
   };
   const popupRef = React.useRef<HTMLDivElement>(null);
   const [highlightedItem, setHighlightedItem] =
@@ -240,12 +261,22 @@ function MorphSelectContent({
             "data-[side=bottom]:[--morph-shift:calc((var(--anchor-height)+var(--morph-gap))*-1)]",
             "data-[side=top]:[--morph-shift:calc(var(--anchor-height)+var(--morph-gap))]",
             "[translate:0_0]",
-            "ease-standard [transition-property:grid-template-rows,translate,border-color,border-radius,box-shadow]",
-            "[transition-duration:var(--poise-duration-slower),var(--poise-duration-slower),var(--poise-duration-base),var(--poise-duration-base),var(--poise-duration-base)]",
+            "[transition-property:grid-template-rows,translate,border-color,border-radius,box-shadow]",
+            // The two properties that carry the panel out spring; the seam it
+            // opens is still an ease. The spring's duration is its settling
+            // time, so the growth is over long before the transition is - the
+            // tail is the ring-down, and nothing else may be timed against it.
+            "[transition-timing-function:var(--morph-spring-ease),var(--morph-spring-ease),var(--poise-ease-standard),var(--poise-ease-standard),var(--poise-ease-standard)]",
+            "[transition-duration:var(--morph-spring-duration),var(--morph-spring-duration),var(--poise-duration-base),var(--poise-duration-base),var(--poise-duration-base)]",
             "[transition-delay:0s,0s,var(--poise-duration-middle),var(--poise-duration-middle),var(--poise-duration-middle)]",
             "data-starting-style:grid-rows-[0fr]",
             "data-starting-style:[translate:0_var(--morph-shift)]",
             "data-ending-style:grid-rows-[0fr]",
+            // Closing does not spring. An overshoot on the way out would push
+            // the panel out past the trigger before coming back, and Base UI
+            // holds the popup mounted for the whole transition - the settling
+            // tail would keep a closed popup in the DOM for twice as long.
+            "data-ending-style:ease-standard",
             "data-ending-style:[transition-duration:var(--poise-duration-slow),var(--poise-duration-slow),var(--poise-duration-base),var(--poise-duration-base),var(--poise-duration-base)]",
             "data-ending-style:[transition-delay:0s,0s,var(--poise-duration-fast),var(--poise-duration-fast),var(--poise-duration-fast)]",
             "data-ending-style:[translate:0_var(--morph-shift)]",

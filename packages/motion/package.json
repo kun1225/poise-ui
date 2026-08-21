@@ -4,6 +4,10 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/springs.ts"
+    ".": "./src/springs.ts",
+    "./spring-css": "./src/spring-css.ts"
+  },
+  "dependencies": {
+    "motion": "^13.1.0"
   }
 }
