@@ -182,9 +182,20 @@ export type MorphSelectContentProps = Primitive.Popup.Props & {
  *   `--anchor-height`, which is what makes the start pose the trigger's own box
  *   rather than nothing at all. Neither end of that is `auto`, so it is a real
  *   interpolation.
- * - `border-radius` and `border-color` round the leading edge out as the gap
- *   opens, the other half of the seam the trigger is holding.
- * - `filter` and `opacity` bring it into focus.
+ * - `border-radius`, `border-color` and `box-shadow` round the leading edge out
+ *   and lift the panel off the page as the gap opens - the other half of the
+ *   seam the trigger is holding. The shadow animates by colour rather than by
+ *   `shadow-none`, so it interpolates from the same geometry instead of from a
+ *   keyword, and nothing is cast around the trigger while the panel is still
+ *   hidden behind it.
+ * Nothing fades the popup itself. The wrapper inside it owns both the blur and
+ * the fade, because a `filter` or an `opacity` on the popup takes its border and
+ * shadow with it: the panel softens, widens and washes out just when it is
+ * meant to be reading as the trigger's own box. The panel therefore stays solid
+ * from the first frame - it is hidden because it is behind the trigger, not
+ * because it is transparent - and only the rows arrive out of nothing. The
+ * wrapper cannot see the popup's transition state on its own, so the popup lends
+ * it one as a group.
  *
  * The popup is genuinely behind the trigger while it is behind it: the trigger
  * outranks the positioner for as long as a popup exists. That only holds while
@@ -246,23 +257,24 @@ function MorphSelectContent({
         <Primitive.Popup
           style={popupStyle}
           className={cn(
-            "border-border bg-bg text-fg grid w-(--anchor-width) grid-rows-[1fr] overflow-hidden rounded-md border shadow-lg",
+            "group/morph border-border bg-bg text-fg grid w-(--anchor-width) grid-rows-[1fr] overflow-hidden rounded-md border shadow-lg",
             "min-h-(--anchor-height)",
             // How far back over the trigger the start and end poses sit.
             "data-[side=bottom]:[--morph-shift:calc((var(--anchor-height)+var(--morph-gap))*-1)]",
             "data-[side=top]:[--morph-shift:calc(var(--anchor-height)+var(--morph-gap))]",
-            "[translate:0_0] [filter:blur(0px)]",
-            "ease-standard [transition-property:grid-template-rows,translate,opacity,filter,border-color,border-radius]",
-            "[transition-duration:var(--poise-duration-slower),var(--poise-duration-slower),var(--poise-duration-slower),var(--poise-duration-slower),var(--poise-duration-base),var(--poise-duration-base)]",
-            "[transition-delay:0s,0s,0s,0s,var(--poise-duration-middle),var(--poise-duration-middle)]",
-            "data-starting-style:grid-rows-[0fr] data-starting-style:opacity-0",
-            "data-starting-style:[translate:0_var(--morph-shift)] data-starting-style:[filter:blur(6px)]",
-            "data-ending-style:grid-rows-[0fr] data-ending-style:opacity-0",
-            "data-ending-style:[transition-duration:var(--poise-duration-slow),var(--poise-duration-slow),var(--poise-duration-slow),var(--poise-duration-slow),var(--poise-duration-base),var(--poise-duration-base)]",
-            "data-ending-style:[transition-delay:0s,0s,0s,0s,var(--poise-duration-fast),var(--poise-duration-fast)]",
-            "data-ending-style:[translate:0_var(--morph-shift)] data-ending-style:[filter:blur(6px)]",
+            "[translate:0_0]",
+            "ease-standard [transition-property:grid-template-rows,translate,border-color,border-radius,box-shadow]",
+            "[transition-duration:var(--poise-duration-slower),var(--poise-duration-slower),var(--poise-duration-base),var(--poise-duration-base),var(--poise-duration-base)]",
+            "[transition-delay:0s,0s,var(--poise-duration-middle),var(--poise-duration-middle),var(--poise-duration-middle)]",
+            "data-starting-style:grid-rows-[0fr]",
+            "data-starting-style:[translate:0_var(--morph-shift)]",
+            "data-ending-style:grid-rows-[0fr]",
+            "data-ending-style:[transition-duration:var(--poise-duration-slow),var(--poise-duration-slow),var(--poise-duration-base),var(--poise-duration-base),var(--poise-duration-base)]",
+            "data-ending-style:[transition-delay:0s,0s,var(--poise-duration-fast),var(--poise-duration-fast),var(--poise-duration-fast)]",
+            "data-ending-style:[translate:0_var(--morph-shift)]",
             // The popup's half of the seam: flat against the trigger at both
             // ends of the flight, rounded once it is clear of it.
+            "data-ending-style:shadow-transparent data-starting-style:shadow-transparent",
             "data-[side=bottom]:data-starting-style:rounded-t-none data-[side=bottom]:data-starting-style:border-t-transparent",
             "data-[side=bottom]:data-ending-style:rounded-t-none data-[side=bottom]:data-ending-style:border-t-transparent",
             "data-[side=top]:data-starting-style:rounded-b-none data-[side=top]:data-starting-style:border-b-transparent",
@@ -273,7 +285,14 @@ function MorphSelectContent({
           <div
             ref={popupRef}
             data-slot="morph-select-content"
-            className={cn("relative min-h-0 overflow-hidden p-1", className)}
+            className={cn(
+              "relative min-h-0 overflow-hidden p-1",
+              "duration-slower ease-standard opacity-100 [filter:blur(0px)] transition-[filter,opacity]",
+              "group-data-starting-style/morph:opacity-0 group-data-starting-style/morph:[filter:blur(6px)]",
+              "group-data-ending-style/morph:opacity-0 group-data-ending-style/morph:[filter:blur(6px)]",
+              "group-data-ending-style/morph:duration-slow",
+              className,
+            )}
           >
             <MorphSelectScrollUpButton />
             <MorphSelectItemOverlay
