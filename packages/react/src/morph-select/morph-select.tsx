@@ -20,8 +20,10 @@ import * as React from "react";
  * geometry has to stay in CSS for Base UI to see the popup animating, so this
  * is the one way to spring it.
  *
- * `smooth` first reaches its target at 420ms, which is the flight the trigger's
- * seam is already timed against - only the overshoot is new.
+ * `smooth` first reaches its target at 233ms and peaks 9.5% past it at 317ms,
+ * settling by 900ms. `visualDuration` is not that first crossing - a bouncy
+ * spring gets there well ahead of it - so the number to time the seam against
+ * is the measured 233ms, not the 420ms on the tin.
  */
 const MORPH_SPRING = springToCss(springs.smooth);
 
@@ -62,7 +64,7 @@ function MorphSelectTrigger({
     <Primitive.Trigger
       data-slot="morph-select-trigger"
       className={cn(
-        "group text-fg border-border bg-bg relative flex w-fit min-w-0 cursor-pointer items-center justify-between gap-2 rounded-md border px-3 py-2 text-left text-sm active:scale-97",
+        "group text-fg border-border bg-bg relative flex w-fit min-w-0 cursor-pointer items-center justify-between gap-2 rounded-md border px-3 py-2 text-left text-sm",
         "hover:not-data-popup-side:not-data-disabled:bg-muted",
         "focus-visible:outline-ring outline-2 outline-offset-2 outline-transparent",
         "data-placeholder:text-muted-fg",
@@ -79,7 +81,6 @@ function MorphSelectTrigger({
         "ease-standard [transition-property:background-color,outline-color,border-color,border-radius]",
         "[transition-duration:var(--poise-duration-fast),var(--poise-duration-fast),var(--poise-duration-slow),var(--poise-duration-slow)]",
         "[transition-delay:0s,0s,var(--poise-duration-middle),var(--poise-duration-middle)]",
-
         "not-data-morph-welded:not-data-popup-open:data-popup-side:[transition-delay:0s,0s,var(--poise-duration-fast),var(--poise-duration-fast)]",
         // Welding is instant, releasing it is not. A duration and a delay only
         // apply to the change that starts while they are in effect, so the flat
@@ -120,15 +121,6 @@ function MorphSelectTrigger({
 /**
  * Holds the welded style for exactly one painted frame either side of an open
  * change, then drops it.
- *
- * A CSS transition can only run *from* a style that has been painted, and
- * `data-popup-open` arrives in the same frame as the popup itself - so keying
- * the seam off it would hold the trigger flat for as long as the popup is open
- * rather than for as long as it is behind the trigger. Painting welded first and
- * releasing it on the next frame hands the rest to the transition above, which
- * rounds the corners out over the same time the popup takes to clear the gap.
- * Closing is the mirror: flat for a frame, rounding out behind the retreating
- * popup.
  */
 function MorphTriggerSurface({
   open,
