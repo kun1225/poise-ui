@@ -280,17 +280,26 @@ function MorphSelectContent({
             "data-ending-style:[transition-duration:var(--poise-duration-slow),var(--poise-duration-slow),var(--poise-duration-base),var(--poise-duration-base),var(--poise-duration-base)]",
             "data-ending-style:[transition-delay:0s,0s,var(--poise-duration-fast),var(--poise-duration-fast),var(--poise-duration-fast)]",
             "data-ending-style:[translate:0_var(--morph-shift)]",
-            // The popup's half of the seam: flat against the trigger at both
-            // ends of the flight, rounded once it is clear of it.
+            // The popup's half of the seam: the leading edge stays flat against
+            // the trigger at both ends of the flight, and rounds out once it is
+            // clear of it.
             "data-ending-style:shadow-transparent data-starting-style:shadow-transparent",
-            "data-[side=bottom]:data-starting-style:rounded-t-none",
             "data-[side=bottom]:data-starting-style:border-t-transparent",
-            "data-[side=bottom]:data-ending-style:rounded-t-none",
             "data-[side=bottom]:data-ending-style:border-t-transparent",
-            "data-[side=top]:data-starting-style:rounded-b-none",
             "data-[side=top]:data-starting-style:border-b-transparent",
-            "data-[side=top]:data-ending-style:rounded-b-none",
             "data-[side=top]:data-ending-style:border-b-transparent",
+            // The corners of that edge only square off on the way in. Fully
+            // retracted, the popup is exactly the trigger's box, so a square
+            // corner juts out past the trigger's rounded one - and a transition
+            // cannot round it back again, since the retracted pose is where it
+            // is headed. Opening spends that mismatch in the frames before the
+            // panel has moved out from behind the trigger, and buys 240ms of
+            // flat join with it while the trigger's own corners are still
+            // square. Closing has nothing to buy - the trigger has rounded its
+            // corners back by 120ms, long before the panel lands - so it would
+            // be paying for a line drawn across a trigger at rest.
+            "data-[side=bottom]:data-starting-style:rounded-t-none",
+            "data-[side=top]:data-starting-style:rounded-b-none",
           )}
           {...props}
         >
