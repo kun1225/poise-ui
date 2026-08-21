@@ -62,7 +62,7 @@ function MorphSelectTrigger({
     <Primitive.Trigger
       data-slot="morph-select-trigger"
       className={cn(
-        "group text-fg border-border bg-bg relative flex w-fit min-w-0 cursor-pointer items-center justify-between gap-2 rounded-md border px-3 py-2 text-left text-sm",
+        "group text-fg border-border bg-bg relative flex w-fit min-w-0 cursor-pointer items-center justify-between gap-2 rounded-md border px-3 py-2 text-left text-sm active:scale-97",
         "hover:not-data-popup-side:not-data-disabled:bg-muted",
         "focus-visible:outline-ring outline-2 outline-offset-2 outline-transparent",
         "data-placeholder:text-muted-fg",
@@ -283,9 +283,13 @@ function MorphSelectContent({
             // The popup's half of the seam: flat against the trigger at both
             // ends of the flight, rounded once it is clear of it.
             "data-ending-style:shadow-transparent data-starting-style:shadow-transparent",
+            "data-[side=bottom]:data-starting-style:rounded-t-none",
             "data-[side=bottom]:data-starting-style:border-t-transparent",
+            "data-[side=bottom]:data-ending-style:rounded-t-none",
             "data-[side=bottom]:data-ending-style:border-t-transparent",
+            "data-[side=top]:data-starting-style:rounded-b-none",
             "data-[side=top]:data-starting-style:border-b-transparent",
+            "data-[side=top]:data-ending-style:rounded-b-none",
             "data-[side=top]:data-ending-style:border-b-transparent",
           )}
           {...props}
