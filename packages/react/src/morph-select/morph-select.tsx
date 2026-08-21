@@ -78,10 +78,17 @@ function MorphSelectTrigger({
         // still passing it, and only rounds out over the tail of the flight.
         // Delay plus duration is the flight exactly: 240 + 180 = 420 in, and
         // 120 + 180 = 300 back out.
-        "ease-standard [transition-property:background-color,outline-color,border-color,border-radius]",
-        "[transition-duration:var(--poise-duration-fast),var(--poise-duration-fast),var(--poise-duration-slow),var(--poise-duration-slow)]",
-        "[transition-delay:0s,0s,var(--poise-duration-middle),var(--poise-duration-middle)]",
-        "not-data-morph-welded:not-data-popup-open:data-popup-side:[transition-delay:0s,0s,var(--poise-duration-fast),var(--poise-duration-fast)]",
+        // One frame of squash as the panel leaves, released into `out-back` so
+        // the trigger springs back rather than easing back. Nothing about the
+        // trigger otherwise suggests it is the thing the panel came out of, and
+        // a percent is enough - the text rides along, so any more of it reads
+        // as the label wobbling.
+        "data-morph-welded:scale-[0.99]",
+        "[transition-property:background-color,outline-color,border-color,border-radius,scale]",
+        "[transition-timing-function:var(--poise-ease-standard),var(--poise-ease-standard),var(--poise-ease-standard),var(--poise-ease-standard),var(--poise-ease-out-back)]",
+        "[transition-duration:var(--poise-duration-fast),var(--poise-duration-fast),var(--poise-duration-slow),var(--poise-duration-slow),var(--poise-duration-slow)]",
+        "[transition-delay:0s,0s,var(--poise-duration-middle),var(--poise-duration-middle),0s]",
+        "not-data-morph-welded:not-data-popup-open:data-popup-side:[transition-delay:0s,0s,var(--poise-duration-fast),var(--poise-duration-fast),0s]",
         // Welding is instant, releasing it is not. A duration and a delay only
         // apply to the change that starts while they are in effect, so the flat
         // edge lands in the frame it is asked for and the round-out gets the
@@ -144,6 +151,29 @@ function MorphTriggerSurface({
 
   return <button {...props} data-morph-welded={welded ? "" : undefined} />;
 }
+
+/**
+ * Brings the rows in one after another as the panel grows, rather than handing
+ * over a list that was already laid out and only needed uncovering.
+ *
+ * A fixed ladder rather than a per-row variable, so the whole thing stays in
+ * CSS. The steps are 60ms and the last one lands at 360ms, just past the 233ms
+ * the panel takes to arrive - the ladder should still be running as the box
+ * settles, or the rows finish before the panel does and it reads as a list that
+ * was waiting. The fourth row onwards shares the last step so a long list does
+ * not drag, and the rows the ladder never reaches are below the fold anyway.
+ *
+ * Closing is not staggered. The panel collapses as one, which reads faster than
+ * reversing the ladder.
+ */
+const staggerRows = cn(
+  "[&>*]:duration-base [&>*]:ease-standard [&>*]:transition-[opacity,translate]",
+  "group-data-starting-style/morph:[&>*]:-translate-y-1 group-data-starting-style/morph:[&>*]:opacity-0",
+  "[&>*:nth-child(2)]:delay-[60ms]",
+  "[&>*:nth-child(3)]:delay-[120ms]",
+  "[&>*:nth-child(n+4)]:delay-[180ms]",
+  "motion-reduce:[&>*]:transition-none motion-reduce:[&>*]:delay-0",
+);
 
 export type MorphSelectContentProps = Primitive.Popup.Props & {
   /** Which edge of the trigger the popup grows from. Flips if there is no room. */
@@ -249,28 +279,47 @@ function MorphSelectContent({
           className={cn(
             "group/morph border-border bg-bg text-fg grid w-(--anchor-width) grid-rows-[1fr] overflow-hidden rounded-md border shadow-lg",
             "min-h-(--anchor-height)",
-            // How far back over the trigger the start and end poses sit.
+            // How far back over the trigger the start and end poses sit, and
+            // how far the gap alone is worth.
             "data-[side=bottom]:[--morph-shift:calc((var(--anchor-height)+var(--morph-gap))*-1)]",
+            "data-[side=bottom]:[--morph-gap-shift:calc(var(--morph-gap)*-1)]",
             "data-[side=top]:[--morph-shift:calc(var(--anchor-height)+var(--morph-gap))]",
-            "[translate:0_0]",
-            "[transition-property:grid-template-rows,translate,border-color,border-radius,box-shadow]",
-            // The two properties that carry the panel out spring; the seam it
-            // opens is still an ease. The spring's duration is its settling
-            // time, so the growth is over long before the transition is - the
-            // tail is the ring-down, and nothing else may be timed against it.
-            "[transition-timing-function:var(--morph-spring-ease),var(--morph-spring-ease),var(--poise-ease-standard),var(--poise-ease-standard),var(--poise-ease-standard)]",
-            "[transition-duration:var(--morph-spring-duration),var(--morph-spring-duration),var(--poise-duration-base),var(--poise-duration-base),var(--poise-duration-base)]",
-            "[transition-delay:0s,0s,var(--poise-duration-middle),var(--poise-duration-middle),var(--poise-duration-middle)]",
+            "data-[side=top]:[--morph-gap-shift:var(--morph-gap)]",
+            // Growing and coming clear are two beats, not one. `translate`
+            // carries the panel out and stops a gap short of where it rests, so
+            // its leading edge is against the trigger for the whole flight
+            // rather than drifting off it from the first frame; `transform`
+            // then opens the gap on its own, once the growth is over. They can
+            // share one element because `translate` is its own property and is
+            // applied before `transform` rather than overwritten by it - two
+            // moves on one box, on two timelines.
+            "[translate:0_var(--morph-gap-shift)]",
+            "[transform:translateY(calc(var(--morph-gap-shift)*-1))]",
+            "[transition-property:grid-template-rows,translate,transform,border-color,border-radius,box-shadow]",
+            // The two properties that carry the panel out spring; the gap and
+            // the seam that open behind it are eases, and share a timeline -
+            // the corners round out over exactly the frames the gap appears in.
+            // The spring's duration is its settling time, so the growth is over
+            // long before the transition is - the tail is the ring-down, and
+            // nothing else may be timed against it.
+            "[transition-timing-function:var(--morph-spring-ease),var(--morph-spring-ease),var(--poise-ease-standard),var(--poise-ease-standard),var(--poise-ease-standard),var(--poise-ease-standard)]",
+            "[transition-duration:var(--morph-spring-duration),var(--morph-spring-duration),var(--poise-duration-base),var(--poise-duration-base),var(--poise-duration-base),var(--poise-duration-base)]",
+            "[transition-delay:0s,0s,var(--poise-duration-middle),var(--poise-duration-middle),var(--poise-duration-middle),var(--poise-duration-middle)]",
             "data-starting-style:grid-rows-[0fr]",
             "data-starting-style:[translate:0_var(--morph-shift)]",
+            "data-starting-style:[transform:translateY(0)]",
             "data-ending-style:grid-rows-[0fr]",
+            "data-ending-style:[transform:translateY(0)]",
             // Closing does not spring. An overshoot on the way out would push
             // the panel out past the trigger before coming back, and Base UI
             // holds the popup mounted for the whole transition - the settling
             // tail would keep a closed popup in the DOM for twice as long.
             "data-ending-style:ease-standard",
-            "data-ending-style:[transition-duration:var(--poise-duration-slow),var(--poise-duration-slow),var(--poise-duration-base),var(--poise-duration-base),var(--poise-duration-base)]",
-            "data-ending-style:[transition-delay:0s,0s,var(--poise-duration-fast),var(--poise-duration-fast),var(--poise-duration-fast)]",
+            // The beats run backwards on the way out: the gap shuts first and
+            // the panel only retracts once it is welded again, which is the
+            // same order the eye reads on the way in.
+            "data-ending-style:[transition-duration:var(--poise-duration-slow),var(--poise-duration-slow),var(--poise-duration-fast),var(--poise-duration-base),var(--poise-duration-base),var(--poise-duration-base)]",
+            "data-ending-style:[transition-delay:var(--poise-duration-fast),var(--poise-duration-fast),0s,var(--poise-duration-fast),var(--poise-duration-fast),var(--poise-duration-fast)]",
             "data-ending-style:[translate:0_var(--morph-shift)]",
             // The popup's half of the seam: flat against the trigger at both
             // ends of the flight, rounded once it is clear of it.
@@ -312,7 +361,10 @@ function MorphSelectContent({
             <MorphOverlayContext.Provider value={overlayContext}>
               <Primitive.List
                 data-slot="morph-select-list"
-                className="relative z-10 max-h-[min(18rem,var(--available-height))] scroll-py-2 overflow-y-auto overscroll-contain py-1"
+                className={cn(
+                  "relative z-10 max-h-[min(18rem,var(--available-height))] scroll-py-2 overflow-y-auto overscroll-contain py-1",
+                  staggerRows,
+                )}
               >
                 {children}
               </Primitive.List>
