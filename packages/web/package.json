@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": {},
+  "exports": {
+    "./accordion": "./src/accordion/accordion.ts"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit"
   },

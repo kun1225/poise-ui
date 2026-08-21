@@ -3,9 +3,11 @@ title: Accordion
 description: A stack of headings that each reveal a panel of content.
 ---
 
-<ComponentPreview name="accordion" />
+<ComponentPreview names={["accordion", "accordion-web"]} />
 
 ## Usage
+
+### React
 
 ```tsx
 import {
@@ -27,7 +29,37 @@ import {
 `AccordionItem` a `value` to control the accordion or set an initial open
 state.
 
+### Web Component
+
+Import the module once to register the custom elements:
+
+```ts
+import "@/components/ui/accordion";
+```
+
+```html
+<poise-accordion>
+  <poise-accordion-item value="overview" open>
+    <poise-accordion-trigger>Overview</poise-accordion-trigger>
+    <poise-accordion-content>Panel content.</poise-accordion-content>
+  </poise-accordion-item>
+</poise-accordion>
+```
+
+Set `open` on an item for its initial state. Read or write the root element's
+`value` property as a `string[]`, and listen for `value-change` when it changes:
+
+```js
+const accordion = document.querySelector("poise-accordion");
+
+accordion.addEventListener("value-change", (event) => {
+  console.log(event.detail.value);
+});
+```
+
 ## Options
+
+### React
 
 `AccordionPanel` takes one prop beyond Base UI's own.
 
@@ -42,7 +74,23 @@ text has nothing to stagger and falls back to the plain height transition.
 Delays step 75ms apart and stop at the fifth child. Closing is never staggered,
 and under `prefers-reduced-motion` the delays and the fade are dropped.
 
+### Web Component
+
+| Element                | Attribute or property | Default | Effect                                  |
+| ---------------------- | --------------------- | ------- | --------------------------------------- |
+| `poise-accordion`      | `multiple`            | `false` | Allows more than one item to stay open. |
+| `poise-accordion`      | `disabled`            | `false` | Disables every trigger.                 |
+| `poise-accordion`      | `.value`              | `[]`    | Gets or sets the selected item values.  |
+| `poise-accordion-item` | `value`               | —       | Identifies the item in the root value.  |
+| `poise-accordion-item` | `open`                | `false` | Opens the item.                         |
+| `poise-accordion-item` | `disabled`            | `false` | Disables the item's trigger.            |
+
+Give every item a `value` when reading or setting the root's `.value` property.
+Boolean options are HTML attributes, so their presence enables them.
+
 ## Anatomy
+
+### React
 
 ```text
 Accordion          Base UI Accordion.Root
@@ -50,3 +98,16 @@ Accordion          Base UI Accordion.Root
     AccordionTrigger Base UI Accordion.Header + Accordion.Trigger
     AccordionPanel   Base UI Accordion.Panel
 ```
+
+### Web Component
+
+```text
+poise-accordion
+  poise-accordion-item
+    poise-accordion-trigger  role="button"
+    poise-accordion-content  role="region"
+```
+
+The item links its trigger and content with generated ARIA IDs. The content
+measures its height, exposes it as `--accordion-panel-height`, and is hidden
+only after its closing transition finishes.

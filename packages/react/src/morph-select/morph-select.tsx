@@ -34,20 +34,6 @@ export type MorphSelectTriggerProps = Omit<
   placeholder?: React.ReactNode;
 };
 
-/**
- * Owns the value text and the chevron, so it takes no children. Base UI puts
- * `data-placeholder` on the trigger while nothing is selected, which is what
- * dims the value text - the value span itself never needs a state class.
- *
- * Base UI also puts `data-popup-side` here for as long as a popup exists, which
- * is both of the things the trigger needs to know: which edge the popup came out
- * of - the side it asked for, or the opposite one it flipped to - and that there
- * is a popup to paint above at all. `z-index` only lasts as long as that
- * attribute, so a resting trigger does not outrank anything on the page.
- *
- * The border stays present at every moment and only its colour changes, so
- * nothing shifts by the width of a border on the way in or out.
- */
 function MorphSelectTrigger({
   className,
   placeholder = "Select…",
@@ -62,11 +48,7 @@ function MorphSelectTrigger({
         "focus-visible:outline-ring outline-2 outline-offset-2 outline-transparent",
         "data-placeholder:text-muted-fg",
         "data-disabled:text-muted-fg data-disabled:cursor-not-allowed",
-        // Above the popup for as long as there is one, so it can come out from
-        // behind the trigger rather than over it.
         "data-popup-side:z-50",
-        // The seam. Whichever edge the popup is behind stops being an edge, and
-        // then rounds back out as the popup clears the trigger.
         "data-morph-welded:data-[popup-side=bottom]:rounded-b-none data-morph-welded:data-[popup-side=bottom]:border-b-transparent",
         "data-morph-welded:data-[popup-side=top]:rounded-t-none data-morph-welded:data-[popup-side=top]:border-t-transparent",
         // Two speeds on one element: the hover and focus cues stay quick, while
@@ -78,12 +60,7 @@ function MorphSelectTrigger({
         "ease-standard [transition-property:background-color,outline-color,border-color,border-radius]",
         "[transition-duration:var(--poise-duration-fast),var(--poise-duration-fast),var(--poise-duration-base),var(--poise-duration-base)]",
         "[transition-delay:0s,0s,var(--poise-duration-middle),var(--poise-duration-middle)]",
-        // Closing is the shorter flight, so the wait before rounding out is
-        // shorter too. No `data-popup-open` while `data-popup-side` is still
-        // there is Base UI's way of saying the popup is on its way out. This
-        // excludes the welded frame by hand: two attribute selectors would
-        // otherwise outrank the rule below and defer the weld past its own
-        // release, which looks exactly like the weld not working at all.
+
         "not-data-morph-welded:not-data-popup-open:data-popup-side:[transition-delay:0s,0s,var(--poise-duration-fast),var(--poise-duration-fast)]",
         // Welding is instant, releasing it is not. A duration and a delay only
         // apply to the change that starts while they are in effect, so the flat
@@ -275,10 +252,10 @@ function MorphSelectContent({
             // The popup's half of the seam: flat against the trigger at both
             // ends of the flight, rounded once it is clear of it.
             "data-ending-style:shadow-transparent data-starting-style:shadow-transparent",
-            "data-[side=bottom]:data-starting-style:rounded-t-none data-[side=bottom]:data-starting-style:border-t-transparent",
-            "data-[side=bottom]:data-ending-style:rounded-t-none data-[side=bottom]:data-ending-style:border-t-transparent",
-            "data-[side=top]:data-starting-style:rounded-b-none data-[side=top]:data-starting-style:border-b-transparent",
-            "data-[side=top]:data-ending-style:rounded-b-none data-[side=top]:data-ending-style:border-b-transparent",
+            "data-[side=bottom]:data-starting-style:border-t-transparent",
+            "data-[side=bottom]:data-ending-style:border-t-transparent",
+            "data-[side=top]:data-starting-style:border-b-transparent",
+            "data-[side=top]:data-ending-style:border-b-transparent",
           )}
           {...props}
         >
@@ -288,8 +265,8 @@ function MorphSelectContent({
             className={cn(
               "relative min-h-0 overflow-hidden p-1",
               "duration-slower ease-standard opacity-100 [filter:blur(0px)] transition-[filter,opacity]",
-              "group-data-starting-style/morph:opacity-0 group-data-starting-style/morph:[filter:blur(6px)]",
-              "group-data-ending-style/morph:opacity-0 group-data-ending-style/morph:[filter:blur(6px)]",
+              "group-data-starting-style/morph:opacity-0 group-data-starting-style/morph:blur-sm",
+              "group-data-ending-style/morph:filter-sm group-data-ending-style/morph:opacity-0",
               "group-data-ending-style/morph:duration-slow",
               className,
             )}
