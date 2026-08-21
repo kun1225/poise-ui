@@ -105,6 +105,26 @@ export const items: ItemSource[] = [
     ],
   },
   {
+    name: "morph-select",
+    target: "react",
+    type: "registry:ui",
+    description:
+      "Select whose popup grows out from behind the trigger and welds to its edge.",
+    dependencies: [
+      "@base-ui/react",
+      "@hugeicons/react",
+      "@hugeicons/core-free-icons",
+    ],
+    registryDependencies: ["shared/tokens", "shared/lib-utils"],
+    files: [
+      {
+        src: "packages/react/src/morph-select/morph-select.tsx",
+        path: "components/ui/morph-select.tsx",
+        type: "registry:ui",
+      },
+    ],
+  },
+  {
     name: "select",
     target: "react",
     type: "registry:ui",

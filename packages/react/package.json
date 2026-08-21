@@ -6,6 +6,7 @@
   "exports": {
     "./accordion": "./src/accordion/accordion.tsx",
     "./morph-accordion": "./src/morph-accordion/morph-accordion.tsx",
+    "./morph-select": "./src/morph-select/morph-select.tsx",
     "./select": "./src/select/select.tsx"
   },
   "scripts": {
