@@ -8,45 +8,67 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { springs } from "@poise-ui/motion";
-import { springToCss } from "@poise-ui/motion/spring-css";
 import { cn } from "@poise-ui/shared";
+import { motion, type HTMLMotionProps } from "motion/react";
 import * as React from "react";
 
-/**
- * The flight out from behind the trigger, as a `linear()` curve.
- *
- * A spring rather than an ease, so the panel carries a little past its resting
- * height and settles back instead of gliding to a stop. Sampled once here: the
- * geometry has to stay in CSS for Base UI to see the popup animating, so this
- * is the one way to spring it.
- *
- * `smooth` first reaches its target at 233ms and peaks 9.5% past it at 317ms,
- * settling by 900ms. `visualDuration` is not that first crossing - a bouncy
- * spring gets there well ahead of it - so the number to time the seam against
- * is the measured 233ms, not the 420ms on the tin.
- */
-const MORPH_SPRING = springToCss(springs.smooth);
-
-/** The only two sides that can weld to the trigger. */
 type MorphSide = "top" | "bottom";
 
-/** The gap the popup rests at, handed to CSS so the start pose can undo it. */
-type MorphPopupStyle = React.CSSProperties & {
-  "--morph-gap": string;
-  "--morph-spring-ease": string;
-  "--morph-spring-duration": string;
-};
+const EXPANDED_POSE = { width: "auto", height: "auto", y: 0 } as const;
 
-type MorphOverlayContextValue = {
-  registerHighlightedItem: (element: HTMLElement) => void;
-  unregisterHighlightedItem: (element: HTMLElement) => void;
-};
-
+/** How an item hands itself to the overlay that follows the highlight. */
 const MorphOverlayContext = React.createContext<
-  MorphOverlayContextValue | undefined
+  React.Dispatch<React.SetStateAction<HTMLElement | null>> | undefined
 >(undefined);
 
-const MorphSelect = Primitive.Root;
+type MorphRootContextValue = {
+  actionsRef: React.RefObject<Primitive.Root.Actions | null>;
+  triggerRef: React.RefObject<HTMLButtonElement | null>;
+};
+
+const MorphRootContext = React.createContext<MorphRootContextValue | undefined>(
+  undefined,
+);
+
+/** Keeps a local ref while still honouring the one the caller passed. */
+const mergeRefs =
+  <T,>(local: React.RefObject<T | null>, forwarded: React.Ref<T> | undefined) =>
+  (element: T | null) => {
+    local.current = element;
+    if (typeof forwarded === "function") forwarded(element);
+    else if (forwarded) forwarded.current = element;
+  };
+
+function useMorphRoot(part: string) {
+  const context = React.useContext(MorphRootContext);
+  if (!context) {
+    throw new Error(`<${part}> must be rendered inside <MorphSelect>.`);
+  }
+  return context;
+}
+
+export type MorphSelectProps<
+  Value,
+  Multiple extends boolean | undefined = false,
+> = Omit<Primitive.Root.Props<Value, Multiple>, "actionsRef">;
+
+/**
+ * Base UI unmounts the popup when a CSS transition on it ends. There is none
+ * now, so `actionsRef` turns that off and `MorphSelectContent` unmounts the
+ * popup itself once the closing spring settles.
+ */
+function MorphSelect<Value, Multiple extends boolean | undefined = false>(
+  props: MorphSelectProps<Value, Multiple>,
+) {
+  const actionsRef = React.useRef<Primitive.Root.Actions | null>(null);
+  const triggerRef = React.useRef<HTMLButtonElement | null>(null);
+
+  return (
+    <MorphRootContext.Provider value={{ actionsRef, triggerRef }}>
+      <Primitive.Root {...props} actionsRef={actionsRef} />
+    </MorphRootContext.Provider>
+  );
+}
 
 export type MorphSelectTriggerProps = Omit<
   Primitive.Trigger.Props,
@@ -58,49 +80,27 @@ export type MorphSelectTriggerProps = Omit<
 function MorphSelectTrigger({
   className,
   placeholder = "Select…",
+  ref,
   ...props
 }: MorphSelectTriggerProps) {
+  const { triggerRef } = useMorphRoot("MorphSelectTrigger");
+
   return (
     <Primitive.Trigger
       data-slot="morph-select-trigger"
       className={cn(
         "group text-fg border-border bg-bg relative flex w-fit min-w-0 cursor-pointer items-center justify-between gap-2 rounded-md border px-3 py-2 text-left text-sm",
-        "hover:not-data-popup-side:not-data-disabled:bg-muted",
+        "hover:not-data-disabled:bg-muted data-popup-open:not-data-disabled:bg-muted",
         "focus-visible:outline-ring outline-2 outline-offset-2 outline-transparent",
         "data-placeholder:text-muted-fg",
         "data-disabled:text-muted-fg data-disabled:cursor-not-allowed",
+        // Above the popup, so the popup is hidden until it grows clear.
         "data-popup-side:z-50",
-        "data-morph-welded:data-[popup-side=bottom]:rounded-b-none data-morph-welded:data-[popup-side=bottom]:border-b-transparent",
-        "data-morph-welded:data-[popup-side=top]:rounded-t-none data-morph-welded:data-[popup-side=top]:border-t-transparent",
-        // Two speeds on one element: the hover and focus cues stay quick, while
-        // the seam waits. The delay is what makes the popup look like it grew
-        // out of the trigger - the edge stays welded for as long as the popup is
-        // still passing it, and only rounds out over the tail of the flight.
-        // Delay plus duration is the flight exactly: 240 + 180 = 420 in, and
-        // 120 + 180 = 300 back out.
-        // One frame of squash as the panel leaves, released into `out-back` so
-        // the trigger springs back rather than easing back. Nothing about the
-        // trigger otherwise suggests it is the thing the panel came out of, and
-        // a percent is enough - the text rides along, so any more of it reads
-        // as the label wobbling.
-        "data-morph-welded:scale-[0.99]",
-        "[transition-property:background-color,outline-color,border-color,border-radius,scale]",
-        "[transition-timing-function:var(--poise-ease-standard),var(--poise-ease-standard),var(--poise-ease-standard),var(--poise-ease-standard),var(--poise-ease-out-back)]",
-        "[transition-duration:var(--poise-duration-fast),var(--poise-duration-fast),var(--poise-duration-slow),var(--poise-duration-slow),var(--poise-duration-slow)]",
-        "[transition-delay:0s,0s,var(--poise-duration-middle),var(--poise-duration-middle),0s]",
-        "not-data-morph-welded:not-data-popup-open:data-popup-side:[transition-delay:0s,0s,var(--poise-duration-fast),var(--poise-duration-fast),0s]",
-        // Welding is instant, releasing it is not. A duration and a delay only
-        // apply to the change that starts while they are in effect, so the flat
-        // edge lands in the frame it is asked for and the round-out gets the
-        // wait. The delay has to be zeroed too, or the weld itself would be
-        // scheduled 240ms out - by which time it has already been released.
-        "data-morph-welded:[transition-delay:0s] data-morph-welded:duration-0",
+        "duration-fast ease-standard transition-[background-color,outline-color]",
         className,
       )}
       {...props}
-      render={(renderProps, state) => (
-        <MorphTriggerSurface {...renderProps} open={state.open} />
-      )}
+      ref={mergeRefs(triggerRef, ref)}
     >
       <Primitive.Value
         data-slot="morph-select-value"
@@ -126,112 +126,20 @@ function MorphSelectTrigger({
 }
 
 /**
- * Holds the welded style for exactly one painted frame either side of an open
- * change, then drops it.
+ * `onAnimationStart` and the drag handlers mean something else on a `motion`
+ * element, so the two signatures cannot be reconciled. Base UI never passes
+ * them, so assert past the overlap.
  */
-function MorphTriggerSurface({
-  open,
-  ...props
-}: React.ComponentProps<"button"> & { open: boolean }) {
-  const [welded, setWelded] = React.useState(false);
-  const openedOnceRef = React.useRef(false);
-
-  React.useLayoutEffect(() => {
-    // The first pass is the initial mount, not an open change - welding there
-    // would flash a flat-bottomed trigger on a page that has not been touched.
-    if (!openedOnceRef.current) {
-      openedOnceRef.current = true;
-      return;
-    }
-
-    setWelded(true);
-    const frame = requestAnimationFrame(() => setWelded(false));
-    return () => cancelAnimationFrame(frame);
-  }, [open]);
-
-  return <button {...props} data-morph-welded={welded ? "" : undefined} />;
-}
-
-/**
- * Brings the rows in one after another as the panel grows, rather than handing
- * over a list that was already laid out and only needed uncovering.
- *
- * A fixed ladder rather than a per-row variable, so the whole thing stays in
- * CSS. The steps are 60ms and the last one lands at 360ms, just past the 233ms
- * the panel takes to arrive - the ladder should still be running as the box
- * settles, or the rows finish before the panel does and it reads as a list that
- * was waiting. The fourth row onwards shares the last step so a long list does
- * not drag, and the rows the ladder never reaches are below the fold anyway.
- *
- * Closing is not staggered. The panel collapses as one, which reads faster than
- * reversing the ladder.
- */
-const staggerRows = cn(
-  "[&>*]:duration-base [&>*]:ease-standard [&>*]:transition-[opacity,translate]",
-  "group-data-starting-style/morph:[&>*]:-translate-y-1 group-data-starting-style/morph:[&>*]:opacity-0",
-  "[&>*:nth-child(2)]:delay-[60ms]",
-  "[&>*:nth-child(3)]:delay-[120ms]",
-  "[&>*:nth-child(n+4)]:delay-[180ms]",
-  "motion-reduce:[&>*]:transition-none motion-reduce:[&>*]:delay-0",
-);
+const asMotionProps = (props: React.ComponentProps<"div">) =>
+  props as HTMLMotionProps<"div">;
 
 export type MorphSelectContentProps = Primitive.Popup.Props & {
-  /** Which edge of the trigger the popup grows from. Flips if there is no room. */
   side?: MorphSide;
-  /** Pixels the popup comes to rest clear of the trigger. */
   sideOffset?: number;
-  /** The positioner sits between the portal and the popup, and owns z-index. */
   positionerClassName?: string;
 };
 
 /**
- * Portal, positioner, popup and list in one - none of the four is useful alone,
- * and the popup has to sit inside all of them to be positioned at all.
- *
- * The morph is all CSS transitions on the popup. Base UI decides when to unmount
- * the popup by watching for a transition on it, so the closing half only exists
- * because these live here rather than in a JS animation:
- *
- * - `translate` carries it out from behind the trigger. The distance is the
- *   trigger's own height plus the gap it comes to rest at, which is what puts
- *   the start pose exactly over the trigger rather than short of it.
- * - `grid-template-rows` grows it from the trigger's height to its own. `0fr`
- *   collapses the only row while `min-height` holds the box open at
- *   `--anchor-height`, which is what makes the start pose the trigger's own box
- *   rather than nothing at all. Neither end of that is `auto`, so it is a real
- *   interpolation.
- * - `border-radius`, `border-color` and `box-shadow` round the leading edge out
- *   and lift the panel off the page as the gap opens - the other half of the
- *   seam the trigger is holding. The shadow animates by colour rather than by
- *   `shadow-none`, so it interpolates from the same geometry instead of from a
- *   keyword, and nothing is cast around the trigger while the panel is still
- *   hidden behind it.
- * Nothing fades the popup itself. The wrapper inside it owns both the blur and
- * the fade, because a `filter` or an `opacity` on the popup takes its border and
- * shadow with it: the panel softens, widens and washes out just when it is
- * meant to be reading as the trigger's own box. The panel therefore stays solid
- * from the first frame - it is hidden because it is behind the trigger, not
- * because it is transparent - and only the rows arrive out of nothing. The
- * wrapper cannot see the popup's transition state on its own, so the popup lends
- * it one as a group.
- *
- * The popup is genuinely behind the trigger while it is behind it: the trigger
- * outranks the positioner for as long as a popup exists. That only holds while
- * both sit in the same stacking context - the popup is portaled to `<body>`, so
- * an ancestor of the trigger that makes a stacking context of its own and sits
- * below `z-50` will win instead, and the popup will pass over the trigger rather
- * than under it. Nothing else about the effect depends on it.
- *
- * The list carries the height cap rather than the popup, and is not stretched
- * to the row it sits in. Base UI reads the scroller's height one frame after
- * opening to decide whether the scroll arrows are needed, and never reads it
- * again unless you scroll - so a scroller whose height is the thing being
- * animated measures as scrollable and keeps an arrow it does not need. Sizing
- * the list itself leaves it the same height at every frame, clipped by the row
- * above it rather than squeezed by it.
- *
- * The width is `--anchor-width` rather than a prop, so the popup is always the
- * trigger's own box to start from. `align` is moot at exactly that width, and
  * `alignItemWithTrigger` is off because that mode drives the popup's height and
  * position itself.
  */
@@ -241,111 +149,60 @@ function MorphSelectContent({
   children,
   side = "bottom",
   sideOffset = 6,
-  style,
   ...props
 }: MorphSelectContentProps) {
-  const popupStyle: MorphPopupStyle = {
-    ...style,
-    "--morph-gap": `${sideOffset}px`,
-    "--morph-spring-ease": MORPH_SPRING.easing,
-    "--morph-spring-duration": MORPH_SPRING.duration,
-  };
+  const { actionsRef, triggerRef } = useMorphRoot("MorphSelectContent");
   const popupRef = React.useRef<HTMLDivElement>(null);
   const [highlightedItem, setHighlightedItem] =
     React.useState<HTMLElement | null>(null);
 
-  const overlayContext = React.useMemo(
-    () => ({
-      registerHighlightedItem: (element: HTMLElement) => {
-        setHighlightedItem(element);
-      },
-      unregisterHighlightedItem: (element: HTMLElement) => {
-        setHighlightedItem((current) => (current === element ? null : current));
-      },
-    }),
-    [],
-  );
+  // Measured off the trigger, not off `--anchor-width` / `--anchor-height`:
+  // custom properties read back unresolved, and Motion needs a number.
+  const collapsedPose = (resolvedSide: Primitive.Popup.State["side"]) => {
+    const trigger = triggerRef.current;
+    const width = trigger?.offsetWidth ?? 0;
+    const height = trigger?.offsetHeight ?? 0;
+    const shift = height + sideOffset;
+
+    return { width, height, y: resolvedSide === "top" ? shift : -shift };
+  };
 
   return (
     <Primitive.Portal>
       <Primitive.Positioner
         side={side}
         sideOffset={sideOffset}
+        align="start"
         alignItemWithTrigger={false}
         className={cn("isolate z-40", positionerClassName)}
       >
         <Primitive.Popup
-          style={popupStyle}
           className={cn(
-            "group/morph border-border bg-bg text-fg grid w-(--anchor-width) grid-rows-[1fr] overflow-hidden rounded-md border shadow-lg",
-            "min-h-(--anchor-height)",
-            // How far back over the trigger the start and end poses sit, and
-            // how far the gap alone is worth.
-            "data-[side=bottom]:[--morph-shift:calc((var(--anchor-height)+var(--morph-gap))*-1)]",
-            "data-[side=bottom]:[--morph-gap-shift:calc(var(--morph-gap)*-1)]",
-            "data-[side=top]:[--morph-shift:calc(var(--anchor-height)+var(--morph-gap))]",
-            "data-[side=top]:[--morph-gap-shift:var(--morph-gap)]",
-            // Growing and coming clear are two beats, not one. `translate`
-            // carries the panel out and stops a gap short of where it rests, so
-            // its leading edge is against the trigger for the whole flight
-            // rather than drifting off it from the first frame; `transform`
-            // then opens the gap on its own, once the growth is over. They can
-            // share one element because `translate` is its own property and is
-            // applied before `transform` rather than overwritten by it - two
-            // moves on one box, on two timelines.
-            "[translate:0_var(--morph-gap-shift)]",
-            "[transform:translateY(calc(var(--morph-gap-shift)*-1))]",
-            "[transition-property:grid-template-rows,translate,transform,border-color,border-radius,box-shadow]",
-            // The two properties that carry the panel out spring; the gap and
-            // the seam that open behind it are eases, and share a timeline -
-            // the corners round out over exactly the frames the gap appears in.
-            // The spring's duration is its settling time, so the growth is over
-            // long before the transition is - the tail is the ring-down, and
-            // nothing else may be timed against it.
-            "[transition-timing-function:var(--morph-spring-ease),var(--morph-spring-ease),var(--poise-ease-standard),var(--poise-ease-standard),var(--poise-ease-standard),var(--poise-ease-standard)]",
-            "[transition-duration:var(--morph-spring-duration),var(--morph-spring-duration),var(--poise-duration-base),var(--poise-duration-base),var(--poise-duration-base),var(--poise-duration-base)]",
-            "[transition-delay:0s,0s,var(--poise-duration-middle),var(--poise-duration-middle),var(--poise-duration-middle),var(--poise-duration-middle)]",
-            "data-starting-style:grid-rows-[0fr]",
-            "data-starting-style:[translate:0_var(--morph-shift)]",
-            "data-starting-style:[transform:translateY(0)]",
-            "data-ending-style:grid-rows-[0fr]",
-            "data-ending-style:[transform:translateY(0)]",
-            // Closing does not spring. An overshoot on the way out would push
-            // the panel out past the trigger before coming back, and Base UI
-            // holds the popup mounted for the whole transition - the settling
-            // tail would keep a closed popup in the DOM for twice as long.
-            "data-ending-style:ease-standard",
-            // The beats run backwards on the way out: the gap shuts first and
-            // the panel only retracts once it is welded again, which is the
-            // same order the eye reads on the way in.
-            "data-ending-style:[transition-duration:var(--poise-duration-slow),var(--poise-duration-slow),var(--poise-duration-fast),var(--poise-duration-base),var(--poise-duration-base),var(--poise-duration-base)]",
-            "data-ending-style:[transition-delay:var(--poise-duration-fast),var(--poise-duration-fast),0s,var(--poise-duration-fast),var(--poise-duration-fast),var(--poise-duration-fast)]",
-            "data-ending-style:[translate:0_var(--morph-shift)]",
-            // The popup's half of the seam: flat against the trigger at both
-            // ends of the flight, rounded once it is clear of it.
-            //
-            // The edge, not its corners. Retracted, the popup is exactly the
-            // trigger's box, so a square corner juts out past the trigger's
-            // rounded one as a hairline - and squaring the corners for the
-            // flight alone would need flat between two rounded poses, which is
-            // a mid stop no single transition has. The corners can stay rounded
-            // because the trigger covers them for as long as the join is worth
-            // hiding: the popup sits behind it, and while the trigger's own
-            // corners are welded square its box masks them completely.
-            "data-ending-style:shadow-transparent data-starting-style:shadow-transparent",
-            "data-[side=bottom]:data-starting-style:border-t-transparent",
-            "data-[side=bottom]:data-ending-style:border-t-transparent",
-            "data-[side=top]:data-starting-style:border-b-transparent",
-            "data-[side=top]:data-ending-style:border-b-transparent",
+            "group/morph border-border bg-bg text-fg w-max max-w-(--available-width) min-w-(--anchor-width) overflow-hidden rounded-md border shadow-lg",
+            "duration-slower ease-standard transition-shadow",
+            "data-starting-style:shadow-transparent",
+            "data-ending-style:duration-base data-ending-style:shadow-transparent",
           )}
           {...props}
+          render={(renderProps, state) => (
+            <motion.div
+              {...asMotionProps(renderProps)}
+              initial={collapsedPose(state.side)}
+              animate={state.open ? EXPANDED_POSE : collapsedPose(state.side)}
+              transition={state.open ? springs.smooth : springs.snappy}
+              // Base UI is not watching, so say when the popup can go.
+              onAnimationComplete={() => {
+                if (!state.open) actionsRef.current?.unmount();
+              }}
+            />
+          )}
         >
           <div
             ref={popupRef}
             data-slot="morph-select-content"
             className={cn(
-              "relative min-h-0 overflow-hidden p-1",
-              "duration-slower ease-standard opacity-100 [filter:blur(0px)] transition-[filter,opacity]",
+              "relative w-max min-w-full p-1",
+              "duration-slower ease-standard opacity-100 transition-[filter,opacity]",
               "group-data-starting-style/morph:opacity-0 group-data-starting-style/morph:blur-sm",
               "group-data-ending-style/morph:filter-sm group-data-ending-style/morph:opacity-0",
               "group-data-ending-style/morph:duration-slow",
@@ -358,13 +215,10 @@ function MorphSelectContent({
               item={highlightedItem}
               className="bg-muted"
             />
-            <MorphOverlayContext.Provider value={overlayContext}>
+            <MorphOverlayContext.Provider value={setHighlightedItem}>
               <Primitive.List
                 data-slot="morph-select-list"
-                className={cn(
-                  "relative z-10 max-h-[min(18rem,var(--available-height))] scroll-py-2 overflow-y-auto overscroll-contain py-1",
-                  staggerRows,
-                )}
+                className="relative z-10 max-h-[min(18rem,var(--available-height))] scroll-py-2 overflow-y-auto overscroll-contain py-1"
               >
                 {children}
               </Primitive.List>
@@ -441,35 +295,27 @@ function MorphSelectItemSurface({
   highlighted: boolean;
 }) {
   const itemRef = React.useRef<HTMLDivElement>(null);
-  const overlayContext = React.useContext(MorphOverlayContext);
+  const setHighlightedItem = React.useContext(MorphOverlayContext);
 
   React.useLayoutEffect(() => {
     const element = itemRef.current;
-    if (!element || !overlayContext) return;
+    if (!element || !setHighlightedItem || !highlighted) return;
 
-    if (highlighted) overlayContext.registerHighlightedItem(element);
+    setHighlightedItem(element);
 
-    return () => {
-      overlayContext.unregisterHighlightedItem(element);
-    };
-  }, [highlighted, overlayContext]);
+    return () =>
+      setHighlightedItem((current) => (current === element ? null : current));
+  }, [highlighted, setHighlightedItem]);
 
   return (
-    <div
-      {...props}
-      ref={(element) => {
-        itemRef.current = element;
-        if (typeof props.ref === "function") props.ref(element);
-        else if (props.ref) props.ref.current = element;
-      }}
-    >
+    <div {...props} ref={mergeRefs(itemRef, props.ref)}>
       <Primitive.ItemText className="relative z-10 min-w-0 flex-1 truncate">
         {children}
       </Primitive.ItemText>
       <Primitive.ItemIndicator
         className={cn(
           "text-muted-fg absolute right-2 z-10 flex items-center",
-          "duration-base ease-out-back transition-[opacity,scale]",
+          "duration-base transition-[opacity,scale] ease-in-out",
           "data-starting-style:scale-50 data-starting-style:opacity-0",
           "data-ending-style:scale-50 data-ending-style:opacity-0",
         )}

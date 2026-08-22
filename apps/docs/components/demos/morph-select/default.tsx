@@ -14,9 +14,15 @@ export function MorphSelectDemo() {
       />
 
       <MorphSelectContent>
-        <MorphSelectItem value="snappy">Snappy</MorphSelectItem>
-        <MorphSelectItem value="smooth">Smooth</MorphSelectItem>
-        <MorphSelectItem value="bouncy">Bouncy</MorphSelectItem>
+        <MorphSelectItem value="snappy">
+          Snappy — buttons and toggles
+        </MorphSelectItem>
+        <MorphSelectItem value="smooth">
+          Smooth — panels and popovers
+        </MorphSelectItem>
+        <MorphSelectItem value="bouncy">
+          Bouncy — deliberate overshoot
+        </MorphSelectItem>
       </MorphSelectContent>
     </MorphSelect>
   );
