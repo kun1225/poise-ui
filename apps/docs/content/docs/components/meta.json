@@ -1,4 +1,10 @@
 {
   "title": "Components",
-  "pages": ["accordion", "morph-accordion", "select", "morph-select"]
+  "pages": [
+    "accordion",
+    "morph-accordion",
+    "select",
+    "morph-select",
+    "relight-image"
+  ]
 }

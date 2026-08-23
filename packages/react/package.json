@@ -7,9 +7,11 @@
     "./accordion": "./src/accordion/accordion.tsx",
     "./morph-accordion": "./src/morph-accordion/morph-accordion.tsx",
     "./morph-select": "./src/morph-select/morph-select.tsx",
+    "./relight-image": "./src/relight-image/relight-image.tsx",
     "./select": "./src/select/select.tsx"
   },
   "scripts": {
+    "test": "node --test test/*.test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -18,7 +20,9 @@
     "@hugeicons/react": "^1.1.9",
     "@poise-ui/motion": "workspace:*",
     "@poise-ui/shared": "workspace:*",
-    "motion": "^13.1.0"
+    "@types/three": "^0.185.4",
+    "motion": "^13.1.0",
+    "three": "^0.185.1"
   },
   "peerDependencies": {
     "react": "^19.0.0"

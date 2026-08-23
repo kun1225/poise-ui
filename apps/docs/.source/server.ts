@@ -1,5 +1,6 @@
 // @ts-nocheck
-import * as __fd_glob_6 from "../content/docs/components/select.mdx?collection=docs"
+import * as __fd_glob_7 from "../content/docs/components/select.mdx?collection=docs"
+import * as __fd_glob_6 from "../content/docs/components/relight-image.mdx?collection=docs"
 import * as __fd_glob_5 from "../content/docs/components/morph-select.mdx?collection=docs"
 import * as __fd_glob_4 from "../content/docs/components/morph-accordion.mdx?collection=docs"
 import * as __fd_glob_3 from "../content/docs/components/accordion.mdx?collection=docs"
@@ -14,4 +15,4 @@ const create = server<typeof Config, import("fumadocs-mdx/runtime/types").Intern
   }
 }>();
 
-export const docs = await create.docs("docs", "content/docs", {"meta.json": __fd_glob_0, "components/meta.json": __fd_glob_1, }, {"index.mdx": __fd_glob_2, "components/accordion.mdx": __fd_glob_3, "components/morph-accordion.mdx": __fd_glob_4, "components/morph-select.mdx": __fd_glob_5, "components/select.mdx": __fd_glob_6, });
+export const docs = await create.docs("docs", "content/docs", {"meta.json": __fd_glob_0, "components/meta.json": __fd_glob_1, }, {"index.mdx": __fd_glob_2, "components/accordion.mdx": __fd_glob_3, "components/morph-accordion.mdx": __fd_glob_4, "components/morph-select.mdx": __fd_glob_5, "components/relight-image.mdx": __fd_glob_6, "components/select.mdx": __fd_glob_7, });

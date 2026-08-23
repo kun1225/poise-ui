@@ -11,6 +11,7 @@ import { MorphSelectDemo } from "@/components/demos/morph-select/default";
 import { MorphSelectGroupsDemo } from "@/components/demos/morph-select/groups";
 import { MorphSelectScrollDemo } from "@/components/demos/morph-select/scroll";
 import { MorphSelectSideDemo } from "@/components/demos/morph-select/side";
+import { RelightImageDemo } from "@/components/demos/relight-image/default";
 import { SelectAlignItemDemo } from "@/components/demos/select/align-item";
 import { SelectDemo } from "@/components/demos/select/default";
 import { SelectGroupsDemo } from "@/components/demos/select/groups";
@@ -72,6 +73,10 @@ const demos = {
   "morph-select-scroll": {
     node: <MorphSelectScrollDemo />,
     src: "morph-select/scroll.tsx",
+  },
+  "relight-image": {
+    node: <RelightImageDemo />,
+    src: "relight-image/default.tsx",
   },
   select: { node: <SelectDemo />, src: "select/default.tsx" },
   "select-groups": {

@@ -125,6 +125,32 @@ export const items: ItemSource[] = [
     ],
   },
   {
+    name: "relight-image",
+    target: "react",
+    type: "registry:ui",
+    description:
+      "Image relighting driven by a depth map, Three.js, TSL, and pointer movement.",
+    dependencies: ["three", "@types/three"],
+    registryDependencies: ["shared/lib-utils"],
+    files: [
+      {
+        src: "packages/react/src/relight-image/relight-image.tsx",
+        path: "components/ui/relight-image.tsx",
+        type: "registry:ui",
+      },
+      {
+        src: "packages/react/src/relight-image/relight-image-depth.ts",
+        path: "components/ui/relight-image-depth.ts",
+        type: "registry:ui",
+      },
+      {
+        src: "packages/react/src/relight-image/relight-image-material.ts",
+        path: "components/ui/relight-image-material.ts",
+        type: "registry:ui",
+      },
+    ],
+  },
+  {
     name: "select",
     target: "react",
     type: "registry:ui",
