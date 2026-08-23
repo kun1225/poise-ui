@@ -7,7 +7,7 @@ import {
   Tick02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { springs } from "@poise-ui/motion";
+import { eases, springs } from "@poise-ui/motion";
 import { cn } from "@poise-ui/shared";
 import { motion, type HTMLMotionProps } from "motion/react";
 import * as React from "react";
@@ -70,10 +70,7 @@ function MorphSelect<Value, Multiple extends boolean | undefined = false>(
   );
 }
 
-export type MorphSelectTriggerProps = Omit<
-  Primitive.Trigger.Props,
-  "children"
-> & {
+export type MorphSelectTriggerProps = Primitive.Trigger.Props & {
   placeholder?: React.ReactNode;
 };
 
@@ -81,6 +78,7 @@ function MorphSelectTrigger({
   className,
   placeholder = "Select…",
   ref,
+  children,
   ...props
 }: MorphSelectTriggerProps) {
   const { triggerRef } = useMorphRoot("MorphSelectTrigger");
@@ -102,11 +100,7 @@ function MorphSelectTrigger({
       {...props}
       ref={mergeRefs(triggerRef, ref)}
     >
-      <Primitive.Value
-        data-slot="morph-select-value"
-        placeholder={placeholder}
-        className="min-w-0 truncate"
-      />
+      {children}
       <Primitive.Icon
         render={
           <HugeiconsIcon
@@ -122,6 +116,16 @@ function MorphSelectTrigger({
         }
       />
     </Primitive.Trigger>
+  );
+}
+
+function MorphSelectValue({ className, ...props }: Primitive.Value.Props) {
+  return (
+    <Primitive.Value
+      data-slot="morph-select-value"
+      className={cn("min-w-0 truncate text-left", className)}
+      {...props}
+    />
   );
 }
 
@@ -189,7 +193,7 @@ function MorphSelectContent({
               {...asMotionProps(renderProps)}
               initial={collapsedPose(state.side)}
               animate={state.open ? EXPANDED_POSE : collapsedPose(state.side)}
-              transition={state.open ? springs.smooth : springs.snappy}
+              transition={state.open ? springs.smooth : eases.standard}
               // Base UI is not watching, so say when the popup can go.
               onAnimationComplete={() => {
                 if (!state.open) actionsRef.current?.unmount();
@@ -451,4 +455,5 @@ export {
   MorphSelectScrollDownButton,
   MorphSelectScrollUpButton,
   MorphSelectTrigger,
+  MorphSelectValue,
 };

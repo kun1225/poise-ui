@@ -3,12 +3,15 @@ import {
   MorphSelectContent,
   MorphSelectItem,
   MorphSelectTrigger,
+  MorphSelectValue,
 } from "@poise-ui/react/morph-select";
 
 export function MorphSelectSideDemo() {
   return (
     <MorphSelect defaultValue="top">
-      <MorphSelectTrigger className="w-full max-w-52" />
+      <MorphSelectTrigger className="w-full max-w-52">
+        <MorphSelectValue className="capitalize" />
+      </MorphSelectTrigger>
 
       <MorphSelectContent side="top">
         <MorphSelectItem value="top">Grows upwards</MorphSelectItem>

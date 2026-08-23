@@ -6,12 +6,15 @@ import {
   MorphSelectItem,
   MorphSelectSeparator,
   MorphSelectTrigger,
+  MorphSelectValue,
 } from "@poise-ui/react/morph-select";
 
 export function MorphSelectGroupsDemo() {
   return (
     <MorphSelect>
-      <MorphSelectTrigger className="min-w-52" placeholder="Pick an easing" />
+      <MorphSelectTrigger className="max-w-52">
+        <MorphSelectValue placeholder="Pick a spring" className="capitalize" />
+      </MorphSelectTrigger>
 
       <MorphSelectContent>
         <MorphSelectGroup>

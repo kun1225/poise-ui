@@ -3,15 +3,15 @@ import {
   MorphSelectContent,
   MorphSelectItem,
   MorphSelectTrigger,
+  MorphSelectValue,
 } from "@poise-ui/react/morph-select";
 
 export function MorphSelectDemo() {
   return (
     <MorphSelect>
-      <MorphSelectTrigger
-        className="w-full max-w-52"
-        placeholder="Pick a spring"
-      />
+      <MorphSelectTrigger className="w-full max-w-52">
+        <MorphSelectValue placeholder="Pick a spring" className="capitalize" />
+      </MorphSelectTrigger>
 
       <MorphSelectContent>
         <MorphSelectItem value="snappy">

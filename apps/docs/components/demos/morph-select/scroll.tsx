@@ -3,6 +3,7 @@ import {
   MorphSelectContent,
   MorphSelectItem,
   MorphSelectTrigger,
+  MorphSelectValue,
 } from "@poise-ui/react/morph-select";
 
 const cities = [
@@ -31,10 +32,9 @@ const cities = [
 export function MorphSelectScrollDemo() {
   return (
     <MorphSelect defaultValue="Taipei">
-      <MorphSelectTrigger
-        className="w-full max-w-52"
-        placeholder="Pick a city"
-      />
+      <MorphSelectTrigger className="w-full max-w-52">
+        <MorphSelectValue placeholder="Pick a city" className="capitalize" />
+      </MorphSelectTrigger>
 
       <MorphSelectContent>
         {cities.map((city) => (

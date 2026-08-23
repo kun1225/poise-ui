@@ -24,18 +24,6 @@ import {
 </MorphSelect>;
 ```
 
-`MorphSelectTrigger` renders the value and the chevron for you, so it takes no
-children. Every `MorphSelectItem` needs a `value`; give the root a `name` to
-submit one with a form.
-
-An item whose children are not a string cannot be shown on the trigger or
-matched by typeahead. Pass `label` on those items to say what the text is.
-
-The popup is always exactly the trigger's width, so the trigger's own width is
-the only width to set. There is no `align` or `alignItemWithTrigger`: at exactly
-the trigger's width there is nothing for `align` to do, and align mode drives
-the popup's height and position itself.
-
 ## Options
 
 Beyond Base UI's own props:
@@ -73,61 +61,14 @@ two stay welded as one panel rather than parting.
 
 ### positionerClassName
 
-The positioner sits between the portal and the popup and owns z-index, so a
-popup that lands behind something else is fixed there rather than on
-`className`, which styles the popup itself.
-
 ```tsx
 <MorphSelectContent positionerClassName="z-100">
 ```
 
 ### Groups
 
-Group related items and separate the groups. Every group needs its own
-`MorphSelectGroupLabel` inside it — that is what Base UI reads to label the
-group.
-
 <ComponentPreview name="morph-select-groups" />
 
 ### Scrolling
 
-The popup is never taller than 18rem or the space actually available on the
-side it landed on, whichever is smaller, and scrolls past that. Arrows appear
-at whichever end has more list to reach.
-
 <ComponentPreview name="morph-select-scroll" />
-
-## Anatomy
-
-```text
-MorphSelect               Base UI Select.Root
-  MorphSelectTrigger        Base UI Select.Trigger + Select.Value + Select.Icon
-  MorphSelectContent        Base UI Select.Portal + Select.Positioner + Select.Popup + Select.List
-    MorphSelectGroup        Base UI Select.Group
-      MorphSelectGroupLabel Base UI Select.GroupLabel
-    MorphSelectItem         Base UI Select.Item + Select.ItemIndicator + Select.ItemText
-    MorphSelectSeparator    Base UI Select.Separator
-```
-
-The morph is CSS transitions on the popup: `translate` carries it out from
-behind the trigger by the trigger's own height plus `sideOffset`,
-`grid-template-rows` grows it from `0fr` to `1fr` against a
-`min-height: var(--anchor-height)`, and `border-radius`, `border-color`,
-`filter` and `opacity` bring it into focus as the gap opens. None of it is
-JavaScript: Base UI unmounts the popup by watching for a transition on it, so
-the closing half only exists because the movement lives in CSS.
-
-The popup really is painted behind the trigger, which outranks the positioner in
-`z-index` for as long as a popup exists. That needs the two to share a stacking
-context — the popup is portaled to `<body>`, so an ancestor of the trigger that
-makes one of its own below `z-50` will win, and the popup will pass over the
-trigger instead. Nothing else about the effect depends on it.
-
-The trigger welds its edge for a single painted frame per open change and then
-releases it, because `data-popup-open` arrives in the same frame as the popup
-and would otherwise hold the edge flat for as long as the popup is open. Both
-edges then wait before rounding out — a transition delay, so the seam holds for
-as long as the popup is still passing the trigger and only opens up over the
-tail of the flight. The trigger keeps its resting background throughout: a
-different fill on either side of the seam would give away that there are two
-boxes.
