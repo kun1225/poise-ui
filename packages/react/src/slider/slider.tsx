@@ -14,6 +14,7 @@ import {
 import * as React from "react";
 
 const GLIDE = "duration-base ease-standard";
+const THUMB_CONTENT_PADDING = 12;
 
 const mergeRefs =
   <T,>(local: React.RefObject<T | null>, forwarded: React.Ref<T> | undefined) =>
@@ -65,7 +66,10 @@ function Slider<Value extends SliderInputValue = SliderInputValue>({
       : 1;
 
   const steps = Math.round((max - min) / step);
-  const scale = steps > 0 ? tickStyle(steps) : undefined;
+  const trackStyle = steps > 0 ? tickStyle(steps) : undefined;
+  const [overlappingThumbs, setOverlappingThumbs] = React.useState<boolean[]>(
+    [],
+  );
 
   return (
     <Primitive.Root<Value>
@@ -86,12 +90,14 @@ function Slider<Value extends SliderInputValue = SliderInputValue>({
             {...controlProps}
             elastic={elastic}
             elasticCap={elasticCap}
+            setOverlappingThumbs={setOverlappingThumbs}
+            overlappingThumbs={overlappingThumbs}
             state={state}
           >
             <Primitive.Track
               data-slot="slider-track"
               className="absolute top-0.5 left-0.5 h-[calc(100%-2px)] w-[calc(100%-4px)]"
-              style={scale}
+              style={trackStyle}
             >
               <Primitive.Indicator
                 data-slot="slider-indicator"
@@ -111,15 +117,19 @@ function Slider<Value extends SliderInputValue = SliderInputValue>({
                 data-slot="slider-thumb"
                 key={index}
                 index={index}
+                data-overlapping={overlappingThumbs[index] || undefined}
                 className={cn(
                   "grid size-(--poise-slider-thumb) items-center justify-center focus-visible:outline-hidden",
-                  "data-dragging:[&>span]:scale-y-100",
+                  "data-dragging:[&>span]:h-6",
+                  "data-[overlapping=true]:[&>span]:h-3.5",
+                  "data-[overlapping=true]:[&>span]:opacity-0",
+                  "data-[overlapping=true]:[&>span]:blur-[1px]",
                   `${GLIDE} transition-[inset-inline-start]`,
                 )}
               >
                 <span
                   aria-hidden="true"
-                  className="bg-fg/70 duration-slow ease-out-back h-6 w-1 scale-y-[0.6] rounded-full transition-transform"
+                  className="bg-fg/70 blur-0 duration-slow ease-standard motion-reduce:duration-instant h-3.5 w-1 rounded-full opacity-100 transition-[height,opacity,filter]"
                 />
               </Primitive.Thumb>
             ))}
@@ -133,6 +143,8 @@ function Slider<Value extends SliderInputValue = SliderInputValue>({
 type SliderCardProps = React.ComponentProps<"div"> & {
   elastic: boolean;
   elasticCap: number;
+  overlappingThumbs: boolean[];
+  setOverlappingThumbs: React.Dispatch<React.SetStateAction<boolean[]>>;
   state: Primitive.Root.State;
 };
 
@@ -141,6 +153,7 @@ function SliderCard({
   className,
   elastic,
   elasticCap,
+  setOverlappingThumbs,
   ref,
   state,
   ...props
@@ -163,6 +176,62 @@ function SliderCard({
       max,
     );
   }, [max, min, values]);
+
+  React.useLayoutEffect(() => {
+    const control = controlRef.current;
+    if (!control) return;
+    const card = control.querySelector<HTMLElement>(
+      '[data-slot="slider-card"]',
+    );
+
+    const updateThumbVisibility = () => {
+      const content = Array.from(
+        control.querySelectorAll<HTMLElement>(
+          '[data-slot="slider-label"], [data-slot="slider-value"]',
+        ),
+      ).map((element) => element.getBoundingClientRect());
+      const thumbs = Array.from(
+        control.querySelectorAll<HTMLElement>('[data-slot="slider-thumb"]'),
+      );
+      const positionRect =
+        card?.getBoundingClientRect() ?? control.getBoundingClientRect();
+      const range = max - min;
+
+      const next = thumbs.map((_, index) => {
+        const value = values[index];
+        if (value === undefined || range <= 0) return false;
+
+        const center =
+          positionRect.left + ((value - min) / range) * positionRect.width;
+
+        return content.some(
+          (region) =>
+            center >= region.left - THUMB_CONTENT_PADDING &&
+            center <= region.right + THUMB_CONTENT_PADDING,
+        );
+      });
+
+      setOverlappingThumbs((current) =>
+        current.length === next.length &&
+        current.every((overlapping, index) => overlapping === next[index])
+          ? current
+          : next,
+      );
+    };
+
+    updateThumbVisibility();
+
+    const observer = new ResizeObserver(updateThumbVisibility);
+    observer.observe(control);
+    if (card) observer.observe(card);
+    control
+      .querySelectorAll<HTMLElement>(
+        '[data-slot="slider-label"], [data-slot="slider-value"]',
+      )
+      .forEach((element) => observer.observe(element));
+
+    return () => observer.disconnect();
+  }, [controlRef, max, min, setOverlappingThumbs, values]);
 
   const handlePointerDownCapture = (
     event: React.PointerEvent<HTMLDivElement>,
