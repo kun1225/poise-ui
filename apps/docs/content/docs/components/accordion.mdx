@@ -3,7 +3,7 @@ title: Accordion
 description: A stack of headings that each reveal a panel of content.
 ---
 
-<ComponentPreview names={["accordion", "accordion-web"]} />
+<ComponentPreview names={["accordion"]} />
 
 ## Usage
 
@@ -28,34 +28,6 @@ import {
 `AccordionTrigger` renders the heading and the button together. Give every
 `AccordionItem` a `value` to control the accordion or set an initial open
 state.
-
-### Web Component
-
-Import the module once to register the custom elements:
-
-```ts
-import "@/components/ui/accordion";
-```
-
-```html
-<poise-accordion>
-  <poise-accordion-item value="overview" open>
-    <poise-accordion-trigger>Overview</poise-accordion-trigger>
-    <poise-accordion-content>Panel content.</poise-accordion-content>
-  </poise-accordion-item>
-</poise-accordion>
-```
-
-Set `open` on an item for its initial state. Read or write the root element's
-`value` property as a `string[]`, and listen for `value-change` when it changes:
-
-```js
-const accordion = document.querySelector("poise-accordion");
-
-accordion.addEventListener("value-change", (event) => {
-  console.log(event.detail.value);
-});
-```
 
 ## Options
 

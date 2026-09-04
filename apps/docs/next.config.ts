@@ -6,7 +6,6 @@ const config: NextConfig = {
     "@poise-ui/motion",
     "@poise-ui/react",
     "@poise-ui/shared",
-    "@poise-ui/web",
   ],
 };
 

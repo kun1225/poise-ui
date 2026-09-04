@@ -20,7 +20,7 @@ export type Spring = {
 
 export const springs = {
   /** Buttons, toggles, anything under the pointer. */
-  snappy: { type: "spring", visualDuration: 0.2, bounce: 0.2 },
+  snappy: { type: "spring", visualDuration: 0.2, bounce: 0.3 },
   /** Panels, popovers, layout shifts. */
   smooth: { type: "spring", visualDuration: 0.4, bounce: 0.5 },
   /** Deliberate overshoot. Use sparingly. */

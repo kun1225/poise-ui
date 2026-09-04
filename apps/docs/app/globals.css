@@ -6,7 +6,6 @@
  * so Tailwind has to be pointed at it explicitly.
  */
 @source "../../../packages/react/src";
-@source "../../../packages/web/src";
 
 body {
   background: var(--poise-color-bg);

@@ -170,4 +170,24 @@ export const items: ItemSource[] = [
       },
     ],
   },
+  {
+    name: "slider",
+    target: "react",
+    type: "registry:ui",
+    description:
+      "Slider drawn as one card, with a step scale behind it and an edge that gives when dragged past.",
+    dependencies: ["@base-ui/react", "motion"],
+    registryDependencies: [
+      "shared/tokens",
+      "shared/lib-utils",
+      "shared/lib-motion",
+    ],
+    files: [
+      {
+        src: "packages/react/src/slider/slider.tsx",
+        path: "components/ui/slider.tsx",
+        type: "registry:ui",
+      },
+    ],
+  },
 ];

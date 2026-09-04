@@ -2,7 +2,6 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { AccordionDemo } from "@/components/demos/accordion/default";
 import { AccordionStaggerDemo } from "@/components/demos/accordion/stagger";
-import { AccordionWebDemo } from "@/components/demos/accordion/web";
 import { MorphAccordionDemo } from "@/components/demos/morph-accordion/default";
 import { MorphAccordionDepthDemo } from "@/components/demos/morph-accordion/depth";
 import { MorphAccordionGapDemo } from "@/components/demos/morph-accordion/gap";
@@ -17,6 +16,10 @@ import { SelectDemo } from "@/components/demos/select/default";
 import { SelectGroupsDemo } from "@/components/demos/select/groups";
 import { SelectPlacementDemo } from "@/components/demos/select/placement";
 import { SelectScrollDemo } from "@/components/demos/select/scroll";
+import { SliderDemo } from "@/components/demos/slider/default";
+import { SliderRigidDemo } from "@/components/demos/slider/rigid";
+import { SliderStepsDemo } from "@/components/demos/slider/steps";
+import { SliderTwoDemo } from "@/components/demos/slider/two-slider";
 import { PreviewPanel } from "@/components/preview-panel";
 import { Fragment } from "react";
 
@@ -32,11 +35,6 @@ const demos = {
     label: "React",
     node: <AccordionDemo />,
     src: "accordion/default.tsx",
-  },
-  "accordion-web": {
-    label: "Web Component",
-    node: <AccordionWebDemo />,
-    src: "accordion/web.tsx",
   },
   "accordion-stagger": {
     node: <AccordionStaggerDemo />,
@@ -92,6 +90,10 @@ const demos = {
     src: "select/placement.tsx",
   },
   "select-scroll": { node: <SelectScrollDemo />, src: "select/scroll.tsx" },
+  slider: { node: <SliderDemo />, src: "slider/default.tsx" },
+  "slider-two": { node: <SliderTwoDemo />, src: "slider/two-slider.tsx" },
+  "slider-steps": { node: <SliderStepsDemo />, src: "slider/steps.tsx" },
+  "slider-rigid": { node: <SliderRigidDemo />, src: "slider/rigid.tsx" },
 } as const;
 
 export type DemoName = keyof typeof demos;

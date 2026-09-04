@@ -8,7 +8,8 @@
     "./morph-accordion": "./src/morph-accordion/morph-accordion.tsx",
     "./morph-select": "./src/morph-select/morph-select.tsx",
     "./relight-image": "./src/relight-image/relight-image.tsx",
-    "./select": "./src/select/select.tsx"
+    "./select": "./src/select/select.tsx",
+    "./slider": "./src/slider/slider.tsx"
   },
   "scripts": {
     "test": "node --test test/*.test.mjs",

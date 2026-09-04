@@ -87,14 +87,15 @@ function MorphSelectTrigger({
     <Primitive.Trigger
       data-slot="morph-select-trigger"
       className={cn(
-        "group text-fg border-border bg-bg relative flex w-fit min-w-0 cursor-pointer items-center justify-between gap-2 rounded-md border px-3 py-2 text-left text-sm",
+        "group text-fg border-border bg-bg relative flex h-10 w-fit min-w-0 cursor-pointer items-center justify-between gap-2 rounded-md border px-3 py-2 text-left text-sm",
+        "active:scale-98",
         "hover:not-data-disabled:bg-muted data-popup-open:not-data-disabled:bg-muted",
         "focus-visible:outline-ring outline-2 outline-offset-2 outline-transparent",
         "data-placeholder:text-muted-fg",
         "data-disabled:text-muted-fg data-disabled:cursor-not-allowed",
         // Above the popup, so the popup is hidden until it grows clear.
         "data-popup-side:z-50",
-        "duration-fast ease-standard transition-[background-color,outline-color]",
+        "duration-fast ease-standard transition-[background-color,outline-color,scale]",
         className,
       )}
       {...props}
@@ -222,7 +223,7 @@ function MorphSelectContent({
             <MorphOverlayContext.Provider value={setHighlightedItem}>
               <Primitive.List
                 data-slot="morph-select-list"
-                className="relative z-10 max-h-[min(18rem,var(--available-height))] scroll-py-2 overflow-y-auto overscroll-contain py-1"
+                className="relative z-10 max-h-[min(18rem,var(--available-height))] scroll-py-2 overflow-y-auto overscroll-contain"
               >
                 {children}
               </Primitive.List>
@@ -258,10 +259,6 @@ function MorphSelectGroupLabel({
   );
 }
 
-/**
- * The checkmark sits in an absolute slot rather than the item's flex row, so a
- * row gaining or losing it never resizes the popup.
- */
 function MorphSelectItem({
   className,
   children,
@@ -274,7 +271,7 @@ function MorphSelectItem({
       label={label ?? (typeof children === "string" ? children : undefined)}
       data-slot="morph-select-item"
       className={cn(
-        "text-fg relative flex cursor-pointer items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm select-none",
+        "text-fg relative flex h-10 cursor-pointer items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm select-none",
         "data-disabled:text-muted-fg data-disabled:pointer-events-none",
         "duration-fast ease-standard transition-colors",
         className,

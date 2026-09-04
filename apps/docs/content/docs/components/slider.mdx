@@ -1,0 +1,61 @@
+---
+title: Slider
+description: A slider drawn as one card, with the step scale printed behind it and an edge that gives when you drag past it.
+---
+
+<ComponentPreview name="slider" />
+
+## Usage
+
+```tsx
+import { Slider, SliderLabel, SliderValue } from "@/components/ui/slider";
+
+<Slider defaultValue={24} min={0} max={40} name="radius">
+  <SliderLabel>Corner Radius</SliderLabel>
+  <SliderValue />
+</Slider>;
+```
+
+Children go in the card's own row: `SliderLabel` on the left, `SliderValue` on
+the right.
+
+Pass an array with one or two entries to `defaultValue` or `value` for a range.
+Each entry gets one thumb, and both thumbs share one fill. The slider is
+horizontal only, so `orientation` is not accepted. `thumbAlignment` defaults to
+`center` and accepts Base UI's alignment values.
+
+<ComponentPreview name="slider-two" />
+
+## Options
+
+Beyond Base UI's own props:
+
+| Prop         | Default | Effect                                                       |
+| ------------ | ------- | ------------------------------------------------------------ |
+| `elastic`    | `true`  | Whether the edge gives when a thumb is dragged past it.      |
+| `elasticCap` | `0.25`  | Maximum elastic distance as a fraction of the control width. |
+
+### elastic
+
+<ComponentPreview name="slider-rigid" />
+
+It is off automatically under `prefers-reduced-motion`.
+
+Use `elasticCap` to control how far the edge can move. It is a fraction of the
+control width, and the elastic distance approaches this value without reaching
+it. For example, `elasticCap={0.1}` makes the effect stiffer than the default.
+
+### step
+
+<ComponentPreview name="slider-steps" />
+
+## Anatomy
+
+```text
+Slider          Base UI Slider.Root
+  <card>          Base UI Slider.Control + the stretching layer
+    <scale>         Base UI Slider.Track + Slider.Indicator
+    SliderLabel     Base UI Slider.Label
+    SliderValue     Base UI Slider.Value
+    <thumb>         Base UI Slider.Thumb
+```

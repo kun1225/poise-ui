@@ -13,7 +13,6 @@
   "dependencies": {
     "@poise-ui/react": "workspace:*",
     "@poise-ui/tokens": "workspace:*",
-    "@poise-ui/web": "workspace:*",
     "fumadocs-core": "^16.14.4",
     "fumadocs-mdx": "^15.2.3",
     "next": "^16.3.1",
