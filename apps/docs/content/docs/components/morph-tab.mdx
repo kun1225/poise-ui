@@ -1,0 +1,62 @@
+---
+title: Morph Tab
+description: Tabs whose active tab detaches from the strip, so it becomes a card of its own.
+---
+
+<ComponentPreview name="morph-tab" />
+
+## Usage
+
+```tsx
+import {
+  MorphTabs,
+  MorphTabsList,
+  MorphTabsPanel,
+  MorphTabsTrigger,
+} from "@/components/ui/morph-tab";
+
+<MorphTabs defaultValue="overview">
+  <MorphTabsList>
+    <MorphTabsTrigger value="overview">Overview</MorphTabsTrigger>
+    <MorphTabsTrigger value="settings">Settings</MorphTabsTrigger>
+  </MorphTabsList>
+
+  <MorphTabsPanel value="overview">Overview panel content.</MorphTabsPanel>
+  <MorphTabsPanel value="settings">Settings panel content.</MorphTabsPanel>
+</MorphTabs>;
+```
+
+Leave space around the tab list.
+The active tab's neighbours move outside the list's own box.
+
+## Options
+
+`MorphTabs` adds one prop.
+
+| Prop  | Default | Effect                                                   |
+| ----- | ------- | -------------------------------------------------------- |
+| `gap` | `12`    | Pixels a neighbouring tab moves clear of the active one. |
+
+### gap
+
+`gap` controls how far tabs move, in pixels.
+Leave at least that much space around the tab list.
+
+<ComponentPreview name="morph-tab-gap" />
+
+## Anatomy
+
+```text
+MorphTabs              Base UI Tabs.Root
+  MorphTabsList           Base UI Tabs.List
+    MorphTabsTrigger        Base UI Tabs.Tab
+      <highlight>             The same label again, on accent
+  MorphTabsPanel          Base UI Tabs.Panel
+```
+
+Each trigger renders its label twice.
+The upper copy sits on accent and is clipped to the slice the highlight covers,
+so the fill slides between tabs and cuts the letters at its own edge.
+
+The active tab reports its own element to the root.
+Every other tab compares itself against it to learn which way to move.

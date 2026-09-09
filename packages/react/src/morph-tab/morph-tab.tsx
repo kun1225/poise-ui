@@ -1,19 +1,169 @@
 "use client";
 
-import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
-import { cn, cva, type VariantProps } from "@poise-ui/shared";
+import { Tabs as Primitive } from "@base-ui/react/tabs";
+import { springs } from "@poise-ui/motion";
+import { cn } from "@poise-ui/shared";
+import {
+  animate,
+  motion,
+  useMotionValue,
+  useTransform,
+  type HTMLMotionProps,
+  type MotionValue,
+} from "motion/react";
+import {
+  createContext,
+  use,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentProps,
+  type Ref,
+  type RefObject,
+} from "react";
 
-function Tabs({
+/** Not `--radius-md`: `@theme inline` names resolve to nothing at runtime. */
+const HIGHLIGHT_RADIUS = "var(--poise-radius-md)";
+
+type MorphOrientation = NonNullable<Primitive.Root.Props["orientation"]>;
+
+type MorphRootContextValue = {
+  gap: number;
+  orientation: MorphOrientation;
+  activeElement: HTMLElement | null;
+  reportActive: (element: HTMLElement, active: boolean) => void;
+  highlightStart: MotionValue<number>;
+  highlightSize: MotionValue<number>;
+};
+
+const MorphRootContext = createContext<MorphRootContextValue | null>(null);
+
+function useMorphRoot(part: string) {
+  const context = use(MorphRootContext);
+  if (!context) {
+    throw new Error(`<${part}> must be rendered inside <MorphTabs>.`);
+  }
+  return context;
+}
+
+const clamp = (value: number, max: number) =>
+  Math.min(Math.max(value, 0), Math.max(max, 0));
+
+export type MorphTabsProps = Omit<Primitive.Root.Props, "render"> & {
+  /** Pixels a neighbouring tab moves clear of the active one. */
+  gap?: number;
+};
+
+/**
+ * Base UI can name the active tab but not place it among its siblings, so the
+ * active tab reports its own element here and the rest measure against it.
+ * The highlight stays a pair of motion values so tabs can clip against it per
+ * frame without re-rendering.
+ */
+function MorphTabs({
   className,
   orientation = "horizontal",
+  gap = 12,
   ...props
-}: TabsPrimitive.Root.Props) {
+}: MorphTabsProps) {
+  const [activeElement, setActiveElement] = useState<HTMLElement | null>(null);
+  const highlightStart = useMotionValue(0);
+  const highlightSize = useMotionValue(0);
+  const placed = useRef(false);
+
+  // Switching tabs deactivates one and activates another in the same commit,
+  // so a tab may only clear the slot it still holds.
+  const reportActive = useCallback((element: HTMLElement, active: boolean) => {
+    setActiveElement((current) => {
+      if (active) return current === element ? current : element;
+      return current === element ? null : current;
+    });
+  }, []);
+
+  useLayoutEffect(() => {
+    const element = activeElement;
+    if (!element) return;
+
+    // Offsets rather than a rect: the tab that just became active may still be
+    // carrying the transform that pushed it aside, and the highlight is aimed
+    // at where it comes to rest.
+    const settle = (sprung: boolean) => {
+      const vertical = orientation === "vertical";
+      const start = vertical ? element.offsetTop : element.offsetLeft;
+      const size = vertical ? element.offsetHeight : element.offsetWidth;
+
+      if (sprung) {
+        animate(highlightStart, start, springs.snappy);
+        animate(highlightSize, size, springs.snappy);
+        return;
+      }
+      highlightStart.set(start);
+      highlightSize.set(size);
+    };
+
+    settle(placed.current);
+    placed.current = true;
+
+    // A ResizeObserver reports once on observe, and that call is the
+    // measurement just taken - letting it through would cut the slide short.
+    let observed = false;
+    const observer = new ResizeObserver(() => {
+      if (!observed) {
+        observed = true;
+        return;
+      }
+      settle(false);
+    });
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [activeElement, orientation, highlightStart, highlightSize]);
+
+  const context = useMemo(
+    () => ({
+      gap,
+      orientation,
+      activeElement,
+      reportActive,
+      highlightStart,
+      highlightSize,
+    }),
+    [
+      gap,
+      orientation,
+      activeElement,
+      reportActive,
+      highlightStart,
+      highlightSize,
+    ],
+  );
+
   return (
-    <TabsPrimitive.Root
-      data-slot="tabs"
-      data-orientation={orientation}
+    <MorphRootContext value={context}>
+      <Primitive.Root
+        data-slot="morph-tabs"
+        data-orientation={orientation}
+        orientation={orientation}
+        className={cn(
+          "group/morph-tabs isolate flex flex-col gap-2 data-[orientation=vertical]:flex-row",
+          className,
+        )}
+        {...props}
+      />
+    </MorphRootContext>
+  );
+}
+
+export type MorphTabsListProps = Omit<Primitive.List.Props, "render">;
+
+function MorphTabsList({ className, ...props }: MorphTabsListProps) {
+  return (
+    <Primitive.List
+      data-slot="morph-tabs-list"
       className={cn(
-        "group/tabs flex gap-2 data-horizontal:flex-col",
+        "relative flex w-fit group-data-[orientation=vertical]/morph-tabs:flex-col",
         className,
       )}
       {...props}
@@ -21,60 +171,179 @@ function Tabs({
   );
 }
 
-const tabsListVariants = cva(
-  "group/tabs-list text-muted-foreground inline-flex w-fit items-center justify-center rounded-lg p-[3px] group-data-horizontal/tabs:h-8 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col data-[variant=line]:rounded-none",
-  {
-    variants: {
-      variant: {
-        default: "bg-muted",
-        line: "gap-1 bg-transparent",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  },
+/**
+ * Every border is present at every moment and only its colour changes, so none
+ * of this shifts layout by the width of a border.
+ */
+const morphTabTrigger = cn(
+  "bg-bg text-fg relative z-0 flex h-10 cursor-pointer items-center justify-center gap-1.5 px-4 text-sm font-medium whitespace-nowrap",
+  "border border-transparent",
+  "group-data-[orientation=horizontal]/morph-tabs:border-y-border group-data-[orientation=horizontal]/morph-tabs:border-l-border",
+  "group-data-[orientation=horizontal]/morph-tabs:first:rounded-l-md",
+  "group-data-[orientation=horizontal]/morph-tabs:last:border-r-border group-data-[orientation=horizontal]/morph-tabs:last:rounded-r-md",
+  "group-data-[orientation=vertical]/morph-tabs:border-x-border group-data-[orientation=vertical]/morph-tabs:border-t-border",
+  "group-data-[orientation=vertical]/morph-tabs:first:rounded-t-md",
+  "group-data-[orientation=vertical]/morph-tabs:last:border-b-border group-data-[orientation=vertical]/morph-tabs:last:rounded-b-md",
+  "not-data-active:hover:bg-accent/10 not-data-active:hover:text-accent",
+  "data-active:border-border data-active:z-1 data-active:rounded-md",
+  "group-data-[orientation=horizontal]/morph-tabs:[&:has(+[data-active])]:border-r-border group-data-[orientation=horizontal]/morph-tabs:[&:has(+[data-active])]:rounded-r-md",
+  "group-data-[orientation=horizontal]/morph-tabs:[[data-active]+&]:rounded-l-md",
+  "group-data-[orientation=vertical]/morph-tabs:[&:has(+[data-active])]:border-b-border group-data-[orientation=vertical]/morph-tabs:[&:has(+[data-active])]:rounded-b-md",
+  "group-data-[orientation=vertical]/morph-tabs:[[data-active]+&]:rounded-t-md",
+  "focus-visible:outline-ring outline-2 -outline-offset-1 outline-transparent focus-visible:relative focus-visible:z-1 focus-visible:outline-offset-2",
+  "data-disabled:text-muted-fg data-disabled:pointer-events-none",
+  "duration-base ease-standard transition-[border-color,border-radius,background-color,color]",
 );
 
-function TabsList({
-  className,
-  variant = "default",
-  ...props
-}: TabsPrimitive.List.Props & VariantProps<typeof tabsListVariants>) {
-  return (
-    <TabsPrimitive.List
-      data-slot="tabs-list"
-      data-variant={variant}
-      className={cn(tabsListVariants({ variant }), className)}
-      {...props}
-    />
-  );
-}
+export type MorphTabsTriggerProps = Omit<Primitive.Tab.Props, "render">;
 
-function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
+function MorphTabsTrigger({ className, ...props }: MorphTabsTriggerProps) {
   return (
-    <TabsPrimitive.Tab
-      data-slot="tabs-trigger"
-      className={cn(
-        "text-foreground/60 hover:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:text-muted-foreground dark:hover:text-foreground relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-1.5 py-0.5 text-sm font-medium whitespace-nowrap transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1 has-data-[icon=inline-start]:pl-1 aria-disabled:pointer-events-none aria-disabled:opacity-50 group-data-[variant=default]/tabs-list:data-active:shadow-sm group-data-[variant=line]/tabs-list:data-active:shadow-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        "group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent",
-        "data-active:bg-background data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground",
-        "after:bg-foreground after:absolute after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100",
-        className,
+    <Primitive.Tab
+      data-slot="morph-tabs-trigger"
+      className={cn(morphTabTrigger, className)}
+      {...props}
+      render={(renderProps, state) => (
+        <MorphTabSurface {...renderProps} active={state.active} />
       )}
-      {...props}
     />
   );
 }
 
-function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
+/**
+ * `onAnimationStart` and the drag handlers mean something else on a `motion`
+ * element. Base UI never passes them, so assert past the overlap.
+ */
+const asMotionProps = (props: ComponentProps<"button">) =>
+  props as HTMLMotionProps<"button">;
+
+const mergeRefs =
+  <T,>(local: RefObject<T | null>, forwarded: Ref<T> | undefined) =>
+  (element: T | null) => {
+    local.current = element;
+    if (typeof forwarded === "function") forwarded(element);
+    else if (forwarded) forwarded.current = element;
+  };
+
+type MorphTabSurfaceProps = ComponentProps<"button"> & {
+  active: boolean;
+  ref?: Ref<HTMLButtonElement>;
+};
+
+/**
+ * The label is drawn twice so the highlight can clip the accent copy to a
+ * rectangle: a colour swap would flip a whole label at once, where a clip lets
+ * the fill's edge cut the letters as it passes.
+ *
+ * The gap is a transform, so the tab you clicked stays put under the pointer
+ * and only its neighbours move - outside the list's own box, so leave room
+ * around it.
+ */
+function MorphTabSurface({
+  active,
+  ref,
+  children,
+  ...props
+}: MorphTabSurfaceProps) {
+  const {
+    gap,
+    orientation,
+    activeElement,
+    reportActive,
+    highlightStart,
+    highlightSize,
+  } = useMorphRoot("MorphTabsTrigger");
+  const elementRef = useRef<HTMLButtonElement>(null);
+  const vertical = orientation === "vertical";
+  const shift = useMotionValue(0);
+
+  // The clip runs on frames of its own, and would otherwise read whichever
+  // render built it.
+  const activeRef = useRef(active);
+  useLayoutEffect(() => {
+    activeRef.current = active;
+  });
+
+  // Layout, not passive: the report has to land before paint, or a neighbour
+  // would start moving a frame after the tab it is moving away from.
+  useLayoutEffect(() => {
+    const element = elementRef.current;
+    if (!active || !element) return;
+    reportActive(element, true);
+    return () => reportActive(element, false);
+  }, [active, reportActive]);
+
+  const push =
+    active || !activeElement || !elementRef.current
+      ? 0
+      : activeElement.compareDocumentPosition(elementRef.current) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+        ? 1
+        : -1;
+
+  // A motion value rather than an `animate` target because the clip reads it
+  // back: the highlight travels in list coordinates, so a tab mid-slide has to
+  // subtract how far it has itself moved.
+  useLayoutEffect(() => {
+    animate(shift, push * gap, springs.bouncy);
+  }, [push, gap, shift]);
+
+  const clipPath = useTransform(
+    [highlightStart, highlightSize, shift],
+    (latest: number[]) => {
+      const [start = 0, size = 0, offset = 0] = latest;
+      const element = elementRef.current;
+
+      // Nothing measured yet - on the server, and before the first layout.
+      // Lighting the active tab whole is what the measurement will confirm.
+      if (!element || size === 0) {
+        return activeRef.current
+          ? `inset(0 round ${HIGHLIGHT_RADIUS})`
+          : "inset(0 100% 0 0)";
+      }
+
+      // `clip-path` resolves against the untransformed box, so the tab's own
+      // translate is added by hand rather than measured in.
+      const own = (vertical ? element.offsetTop : element.offsetLeft) + offset;
+      const extent = vertical ? element.offsetHeight : element.offsetWidth;
+      const near = clamp(start - own, extent);
+      const far = clamp(own + extent - (start + size), extent);
+
+      return vertical
+        ? `inset(${near}px 0 ${far}px 0 round ${HIGHLIGHT_RADIUS})`
+        : `inset(0 ${far}px 0 ${near}px round ${HIGHLIGHT_RADIUS})`;
+    },
+  );
+
   return (
-    <TabsPrimitive.Panel
-      data-slot="tabs-content"
+    <motion.button
+      {...asMotionProps(props)}
+      ref={mergeRefs(elementRef, ref)}
+      style={vertical ? { y: shift } : { x: shift }}
+    >
+      {children}
+      <motion.span
+        aria-hidden="true"
+        data-slot="morph-tabs-highlight"
+        className="bg-accent text-accent-fg pointer-events-none absolute inset-0 flex items-center justify-center gap-1.5 px-3"
+        style={{ clipPath }}
+      >
+        {children}
+      </motion.span>
+    </motion.button>
+  );
+}
+
+export type MorphTabsPanelProps = Omit<Primitive.Panel.Props, "render">;
+
+function MorphTabsPanel({ className, ...props }: MorphTabsPanelProps) {
+  return (
+    <Primitive.Panel
+      data-slot="morph-tabs-panel"
       className={cn("flex-1 text-sm outline-none", className)}
       {...props}
     />
   );
 }
 
-export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants };
+export { MorphTabs, MorphTabsList, MorphTabsTrigger, MorphTabsPanel };

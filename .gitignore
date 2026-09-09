@@ -10,3 +10,6 @@ next-env.d.ts
 apps/*/AGENTS.md
 apps/*/CLAUDE.md
 .pnpm-store/
+
+# fumadocs-mdx generates this
+apps/*/.source/

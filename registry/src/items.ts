@@ -125,6 +125,26 @@ export const items: ItemSource[] = [
     ],
   },
   {
+    name: "morph-tab",
+    target: "react",
+    type: "registry:ui",
+    description:
+      "Tabs whose active tab detaches from the strip as a card of its own.",
+    dependencies: ["@base-ui/react", "motion"],
+    registryDependencies: [
+      "shared/tokens",
+      "shared/lib-utils",
+      "shared/lib-motion",
+    ],
+    files: [
+      {
+        src: "packages/react/src/morph-tab/morph-tab.tsx",
+        path: "components/ui/morph-tab.tsx",
+        type: "registry:ui",
+      },
+    ],
+  },
+  {
     name: "relight-image",
     target: "react",
     type: "registry:ui",

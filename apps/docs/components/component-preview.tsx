@@ -10,6 +10,8 @@ import { MorphSelectDemo } from "@/components/demos/morph-select/default";
 import { MorphSelectGroupsDemo } from "@/components/demos/morph-select/groups";
 import { MorphSelectScrollDemo } from "@/components/demos/morph-select/scroll";
 import { MorphSelectSideDemo } from "@/components/demos/morph-select/side";
+import { MorphTabDemo } from "@/components/demos/morph-tab/default";
+import { MorphTabGapDemo } from "@/components/demos/morph-tab/gap";
 import { RelightImageDemo } from "@/components/demos/relight-image/default";
 import { SelectAlignItemDemo } from "@/components/demos/select/align-item";
 import { SelectDemo } from "@/components/demos/select/default";
@@ -71,6 +73,14 @@ const demos = {
   "morph-select-scroll": {
     node: <MorphSelectScrollDemo />,
     src: "morph-select/scroll.tsx",
+  },
+  "morph-tab": {
+    node: <MorphTabDemo />,
+    src: "morph-tab/default.tsx",
+  },
+  "morph-tab-gap": {
+    node: <MorphTabGapDemo />,
+    src: "morph-tab/gap.tsx",
   },
   "relight-image": {
     node: <RelightImageDemo />,
