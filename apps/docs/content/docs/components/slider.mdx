@@ -16,19 +16,19 @@ import { Slider, SliderLabel, SliderValue } from "@/components/ui/slider";
 </Slider>;
 ```
 
-Children go in the card's own row: `SliderLabel` on the left, `SliderValue` on
-the right.
+Children render inside the card row.
+Use `SliderLabel` on the left.
+Use `SliderValue` on the right.
 
-Pass an array with one or two entries to `defaultValue` or `value` for a range.
-Each entry gets one thumb, and both thumbs share one fill. The slider is
-horizontal only, so `orientation` is not accepted. `thumbAlignment` defaults to
-`center` and accepts Base UI's alignment values.
+Pass one or two values.
+Two values render a range.
+The slider is horizontal only.
 
 <ComponentPreview name="slider-two" />
 
 ## Options
 
-Beyond Base UI's own props:
+Added props:
 
 | Prop         | Default | Effect                                                       |
 | ------------ | ------- | ------------------------------------------------------------ |
@@ -39,11 +39,10 @@ Beyond Base UI's own props:
 
 <ComponentPreview name="slider-rigid" />
 
-It is off automatically under `prefers-reduced-motion`.
+Reduced motion disables elastic movement.
 
-Use `elasticCap` to control how far the edge can move. It is a fraction of the
-control width, and the elastic distance approaches this value without reaching
-it. For example, `elasticCap={0.1}` makes the effect stiffer than the default.
+Use `elasticCap` to limit edge movement.
+Lower values feel stiffer.
 
 ### step
 

@@ -7,8 +7,8 @@ description: An image that reacts to pointer-controlled lighting through a depth
 
 ## Usage
 
-First, create a depth image from your source image with the [Image Depth Generator](https://depth.fojcikdominik.com/).
-Download the generated image, then pass its path to `depthSrc`.
+Create a depth image with the [Image Depth Generator](https://depth.fojcikdominik.com/).
+Pass that path to `depthSrc`.
 
 ```tsx
 import { RelightImage } from "@/components/ui/relight-image";
@@ -21,16 +21,17 @@ import { RelightImage } from "@/components/ui/relight-image";
 />;
 ```
 
-The source image and depth map must use the same dimensions and crop.
-White depth pixels represent nearby surfaces. Black pixels represent distant surfaces.
+The source image and depth map must match.
+White is near.
+Black is far.
 
-The component keeps the source image beneath its canvas. That image remains visible when GPU rendering or depth loading fails.
+The source image remains visible if rendering fails.
 
-Remote depth maps must allow cross-origin pixel access. Same-origin image paths require no additional configuration.
+Remote depth maps need cross-origin pixel access.
 
 ## Settings
 
-Pass `settings` when the default lighting does not suit an image.
+Use `settings` to tune lighting.
 
 | Setting            | Default     | Effect                                      |
 | ------------------ | ----------- | ------------------------------------------- |
@@ -58,12 +59,15 @@ Pass `settings` when the default lighting does not suit an image.
 />;
 ```
 
-Set `interactive={false}` for fixed lighting. Reduced-motion preferences also disable pointer-driven lighting.
+Set `interactive={false}` for fixed lighting.
+Reduced motion disables pointer lighting.
 
 ## Performance
 
-The renderer caps pixel density at two. It also skips rendering while the component is outside the viewport.
+Pixel density is capped at `2`.
+Rendering pauses outside the viewport.
 
-Use a small number of visible instances. Each instance owns a renderer, canvas, textures, and GPU resources.
+Use few visible instances.
+Each instance owns GPU resources.
 
 The technique follows Dominik Fojcik's [MIT-licensed Codrops demo](https://github.com/DGFX/codrops-relightning-images).

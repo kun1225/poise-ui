@@ -24,16 +24,15 @@ import {
 </Select>;
 ```
 
-`SelectTrigger` renders the value and the chevron for you, so it takes no
-children. Every `SelectItem` needs a `value`; give the root a `name` to submit
-one with a form.
+`SelectTrigger` renders the value and chevron.
+Every `SelectItem` needs a `value`.
+Add `name` to submit the value with a form.
 
-An item whose children are not a string cannot be shown on the trigger or
-matched by typeahead. Pass `label` on those items to say what the text is.
+Use `label` when item children are not plain text.
 
 ## Options
 
-Beyond Base UI's own props:
+Added props:
 
 | Component       | Prop                   | Default     | Effect                                             |
 | --------------- | ---------------------- | ----------- | -------------------------------------------------- |
@@ -46,52 +45,39 @@ Beyond Base UI's own props:
 
 ### placeholder
 
-`placeholder` is what the trigger shows until something is selected, dimmed by
-the `data-placeholder` Base UI puts on the trigger. The preview at the top of
-this page starts empty, so it is showing one.
+Shown until an item is selected.
 
 ### side, align and sideOffset
 
-`side` picks the edge of the trigger the popup opens from, `align` lines it up
-along that edge, and `sideOffset` is the pixels between the two. The popup
-grows from whichever edge it landed on, and flips to the opposite side when
-there is no room.
+`side` sets the popup edge.
+`align` sets popup alignment.
+`sideOffset` sets the gap.
 
 <ComponentPreview name="select-placement" />
 
-`alignOffset` shifts the popup along that same edge and passes straight through
-to Base UI, which is why it is not in the table above.
+`alignOffset` passes through to Base UI.
 
 ### alignItemWithTrigger
 
-Turn it on and the popup opens _over_ the trigger, positioned so the selected
-item's text lands on the trigger's own text — the native `<select>` behaviour.
-Base UI drives the popup's height itself in that mode, which is why the popup
-drops its own `max-height` and its open transition when it is active.
+Opens the popup over the trigger.
+The selected item aligns with the trigger text.
 
 <ComponentPreview name="select-align-item" />
 
-It defaults to `false`, unlike Base UI, so that `side` and `align` work as the
-table says. Turning it on **ignores both of them**, along with `sideOffset`.
+This ignores `side`, `align`, and `sideOffset`.
 
-Base UI also drops back to ordinary positioning on its own, in three cases: the
-popup was opened by touch, the trigger is within 20px of the top or bottom of
-the viewport, or there is too little room left to align without squashing the
-popup. `min-height` on the positioner is what sets "too little" — a smaller one
-falls back less often:
+Use `positionerClassName` to tune fallback height:
 
 ```tsx
 <SelectContent alignItemWithTrigger positionerClassName="min-h-16">
 ```
 
-Style the two modes apart with `data-side`, which is `"none"` while align mode
-is the one in effect.
+`data-side="none"` means align mode is active.
 
 ### positionerClassName
 
-The positioner sits between the portal and the popup and owns z-index, so a
-popup that lands behind something else is fixed there rather than on
-`className`, which styles the popup itself.
+Sets classes on the positioner.
+Use it for z-index changes.
 
 ```tsx
 <SelectContent positionerClassName="z-100">
@@ -99,16 +85,14 @@ popup that lands behind something else is fixed there rather than on
 
 ### Groups
 
-Group related items and separate the groups. Every group needs its own
-`SelectGroupLabel` inside it — that is what Base UI reads to label the group.
+Use `SelectGroup` and `SelectGroupLabel` for grouped options.
 
 <ComponentPreview name="select-groups" />
 
 ### Scrolling
 
-The popup is never taller than 18rem or the space actually available on the
-side it landed on, whichever is smaller, and scrolls past that. Arrows appear
-at whichever end has more list to reach.
+Long lists scroll.
+Scroll arrows appear when more items are available.
 
 <ComponentPreview name="select-scroll" />
 
@@ -124,7 +108,5 @@ Select               Base UI Select.Root
     SelectSeparator    Base UI Select.Separator
 ```
 
-`SelectContent` is four Base UI parts in one, because none of them is useful
-on its own and the popup has to sit inside all four to be positioned at all.
-The checkmark sits in an absolute slot rather than the item's flex row, so a
-row gaining or losing it never resizes the popup.
+`SelectContent` wraps the portal, positioner, popup, and list.
+The checkmark does not resize the row.

@@ -23,13 +23,12 @@ import {
 </MorphAccordion>;
 ```
 
-The gap between rows is a transform, not a margin, so neighbouring rows move
-**outside** the accordion's own box. Leave `1rem` of room above and below it,
-or the effect will overlap whatever sits alongside.
+Leave space around the accordion.
+Open rows move outside the root box.
 
 ## Options
 
-`MorphAccordion` takes three props beyond Base UI's own.
+`MorphAccordion` adds three props.
 
 | Prop        | Default | Effect                                                  |
 | ----------- | ------- | ------------------------------------------------------- |
@@ -39,14 +38,11 @@ or the effect will overlap whatever sits alongside.
 
 ### hasBorder
 
-Turning `hasBorder` off only removes the divider between two closed rows. Every
-edge where a card has to seal stays painted, so the stack starts as one blank
-card and gains its seams as it splits.
+Set `hasBorder={false}` to remove dividers between closed rows.
 
 <ComponentPreview name="morph-accordion-no-border" />
 
-It resolves to a custom property, so it can also be set through `className` —
-that is the way to recolour the dividers rather than drop them:
+Use a custom property to recolor dividers:
 
 ```tsx
 <MorphAccordion className="[--morph-divider:transparent]">
@@ -54,17 +50,15 @@ that is the way to recolour the dividers rather than drop them:
 
 ### depth
 
-`depth` drops the closed rows to `0.96` scale, `0.65` opacity and `1.5px` of
-blur. Those rows stay clickable while they are blurred, so keep it for stacks
-whose closed rows are short labels.
+Set `depth` to push closed rows back.
+Closed rows stay clickable.
 
 <ComponentPreview name="morph-accordion-depth" />
 
 ### gap
 
-`gap` is how far a neighbouring row moves clear of the open one, in pixels. It
-is a transform rather than a margin, so raising it reaches further outside the
-accordion's own box — leave that much room around it.
+`gap` controls how far rows move, in pixels.
+Leave at least that much space around the accordion.
 
 <ComponentPreview name="morph-accordion-gap" />
 
@@ -77,10 +71,8 @@ MorphAccordion          Base UI Accordion.Root
     MorphAccordionPanel   Base UI Accordion.Panel
 ```
 
-Base UI decides when to unmount a panel by watching for a CSS transition, and
-there is none here. `MorphAccordionPanel` therefore keeps its panel mounted and
-marks it `inert` while closed, so Motion owns the exit and a closed panel still
-stays out of the tab order and the accessibility tree.
+Closed panels stay mounted.
+They are marked `inert` while closed.
 
 Adapted from [a pen by Jhey Tompkins](https://codepen.io/jh3y/pen/QwyYoVr),
-rebuilt on Base UI for the accordion semantics and Motion for the movement.
+rebuilt with Base UI and Motion.

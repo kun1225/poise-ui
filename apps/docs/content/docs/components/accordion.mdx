@@ -25,15 +25,14 @@ import {
 </Accordion>;
 ```
 
-`AccordionTrigger` renders the heading and the button together. Give every
-`AccordionItem` a `value` to control the accordion or set an initial open
-state.
+Give every `AccordionItem` a `value`.
+Use that value to control open items.
 
 ## Options
 
 ### React
 
-`AccordionPanel` takes one prop beyond Base UI's own.
+`AccordionPanel` adds one prop.
 
 | Prop     | Default  | Effect                                          |
 | -------- | -------- | ----------------------------------------------- |
@@ -41,10 +40,8 @@ state.
 
 <ComponentPreview name="accordion-stagger" />
 
-The stagger runs on the panel's **element** children, so a panel holding bare
-text has nothing to stagger and falls back to the plain height transition.
-Delays step 75ms apart and stop at the fifth child. Closing is never staggered,
-and under `prefers-reduced-motion` the delays and the fade are dropped.
+`reveal="stagger"` only affects element children.
+Reduced motion disables staggered fades.
 
 ### Web Component
 
@@ -57,8 +54,7 @@ and under `prefers-reduced-motion` the delays and the fade are dropped.
 | `poise-accordion-item` | `open`                | `false` | Opens the item.                         |
 | `poise-accordion-item` | `disabled`            | `false` | Disables the item's trigger.            |
 
-Give every item a `value` when reading or setting the root's `.value` property.
-Boolean options are HTML attributes, so their presence enables them.
+Boolean attributes are enabled when present.
 
 ## Anatomy
 
@@ -80,6 +76,5 @@ poise-accordion
     poise-accordion-content  role="region"
 ```
 
-The item links its trigger and content with generated ARIA IDs. The content
-measures its height, exposes it as `--accordion-panel-height`, and is hidden
-only after its closing transition finishes.
+The item links trigger and content with generated ARIA IDs.
+The panel exposes its height as `--accordion-panel-height`.

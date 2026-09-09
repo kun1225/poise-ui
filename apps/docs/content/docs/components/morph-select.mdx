@@ -26,7 +26,7 @@ import {
 
 ## Options
 
-Beyond Base UI's own props:
+Added props:
 
 | Component            | Prop                  | Default     | Effect                                               |
 | -------------------- | --------------------- | ----------- | ---------------------------------------------------- |
@@ -37,29 +37,24 @@ Beyond Base UI's own props:
 
 ### placeholder
 
-`placeholder` is what the trigger shows until something is selected, dimmed by
-the `data-placeholder` Base UI puts on the trigger. The preview at the top of
-this page starts empty, so it is showing one.
+Shown until an item is selected.
 
 ### side
 
-`side` is which edge of the trigger the popup grows from, and the trigger welds
-that edge while the popup is still behind it. It flips to the opposite side when
-there is no room, and the trigger follows the side the popup actually landed on
-rather than the one it asked for.
+Controls which edge the popup grows from.
+The popup flips when space is limited.
 
 <ComponentPreview name="morph-select-side" />
 
 ### sideOffset
 
-`sideOffset` is where the popup comes to rest, not where it starts. It starts
-behind the trigger either way, and the offset is the distance it travels clear —
-so raising it makes the popup fly further, not just sit further away.
-
-Set it to `0` and the popup stops with its edge against the trigger's, and the
-two stay welded as one panel rather than parting.
+Controls the final distance from the trigger.
+Set it to `0` to keep both edges joined.
 
 ### positionerClassName
+
+Sets classes on the positioner.
+Use it for z-index changes.
 
 ```tsx
 <MorphSelectContent positionerClassName="z-100">

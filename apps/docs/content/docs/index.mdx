@@ -3,31 +3,29 @@ title: Introduction
 description: A source-distributed component library for React.
 ---
 
-poise-ui is not an npm package you install. It is a registry of source files
-that the CLI copies into your project, where you own and edit them.
+poise-ui is a source-distributed component library.
 
-Components are built on [Base UI](https://base-ui.com) for behaviour and
-accessibility, and styled with Tailwind against a small set of design tokens.
-Nothing is hidden behind a package boundary: the file that lands in your repo
-is the whole component.
+The CLI copies component source into your project.
+You own the files after installation.
+
+Components use [Base UI](https://base-ui.com) for behavior and accessibility.
+They use Tailwind and CSS tokens for styling.
 
 ## Getting started
 
-Set up the config and design tokens:
+Set up config and tokens:
 
 ```bash
 npx poise-ui init
 ```
 
-Then add a component:
+Add a component:
 
 ```bash
 npx poise-ui add accordion
 ```
 
-The CLI writes the component into your components directory, pulls in whatever
-it depends on — tokens, the `cn` helper — and rewrites imports to match the
-aliases you chose at init.
+The CLI installs the component, its dependencies, and matching imports.
 
 ## How it fits together
 
@@ -37,10 +35,9 @@ behaviour   Base UI primitives, wrapped thinly
 styling     Tailwind classes composed with cn(), yours to change
 ```
 
-Tokens stay plain CSS custom properties on `:root`, which Tailwind maps into
-its theme with `@theme inline`. Restyling a component means editing its
-classes; restyling everything means editing the tokens.
+Edit component classes for local styling.
+Edit tokens for global styling.
 
 <Callout>
-  A Web Component target is planned. Only the React components ship today.
+  Only React components ship today. Web Components are planned.
 </Callout>
