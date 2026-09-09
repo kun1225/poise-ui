@@ -80,6 +80,22 @@ export const items: ItemSource[] = [
     ],
   },
   {
+    name: "liquid-tab",
+    target: "react",
+    type: "registry:ui",
+    description:
+      "Tabs whose fill stretches across the gap as it travels, then pulls itself back together.",
+    dependencies: ["@base-ui/react", "motion"],
+    registryDependencies: ["shared/tokens", "shared/lib-utils"],
+    files: [
+      {
+        src: "packages/react/src/liquid-tab/liquid-tab.tsx",
+        path: "components/ui/liquid-tab.tsx",
+        type: "registry:ui",
+      },
+    ],
+  },
+  {
     name: "morph-accordion",
     target: "react",
     type: "registry:ui",
@@ -206,6 +222,26 @@ export const items: ItemSource[] = [
       {
         src: "packages/react/src/slider/slider.tsx",
         path: "components/ui/slider.tsx",
+        type: "registry:ui",
+      },
+    ],
+  },
+  {
+    name: "tab",
+    target: "react",
+    type: "registry:ui",
+    description:
+      "Tabs as plain type on the page, with a rule that travels and resizes under the active label.",
+    dependencies: ["@base-ui/react", "motion"],
+    registryDependencies: [
+      "shared/tokens",
+      "shared/lib-utils",
+      "shared/lib-motion",
+    ],
+    files: [
+      {
+        src: "packages/react/src/tab/tab.tsx",
+        path: "components/ui/tab.tsx",
         type: "registry:ui",
       },
     ],

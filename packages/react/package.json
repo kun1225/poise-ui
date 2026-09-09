@@ -5,12 +5,14 @@
   "type": "module",
   "exports": {
     "./accordion": "./src/accordion/accordion.tsx",
+    "./liquid-tab": "./src/liquid-tab/liquid-tab.tsx",
     "./morph-accordion": "./src/morph-accordion/morph-accordion.tsx",
     "./morph-select": "./src/morph-select/morph-select.tsx",
     "./morph-tab": "./src/morph-tab/morph-tab.tsx",
     "./relight-image": "./src/relight-image/relight-image.tsx",
     "./select": "./src/select/select.tsx",
-    "./slider": "./src/slider/slider.tsx"
+    "./slider": "./src/slider/slider.tsx",
+    "./tab": "./src/tab/tab.tsx"
   },
   "scripts": {
     "test": "node --test test/*.test.mjs",
