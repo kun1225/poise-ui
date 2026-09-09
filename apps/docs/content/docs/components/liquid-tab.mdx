@@ -1,0 +1,38 @@
+---
+title: Liquid Tab
+description: Tabs with a pill that stretches across the gap when it travels, then pulls back together.
+---
+
+<ComponentPreview name="liquid-tab" />
+
+## Usage
+
+```tsx
+import {
+  LiquidTabs,
+  LiquidTabsList,
+  LiquidTabsPanel,
+  LiquidTabsTrigger,
+} from "@/components/ui/liquid-tab";
+
+<LiquidTabs defaultValue="overview">
+  <LiquidTabsList>
+    <LiquidTabsTrigger value="overview">Overview</LiquidTabsTrigger>
+    <LiquidTabsTrigger value="settings">Settings</LiquidTabsTrigger>
+  </LiquidTabsList>
+
+  <LiquidTabsPanel value="overview">Overview panel content.</LiquidTabsPanel>
+  <LiquidTabsPanel value="settings">Settings panel content.</LiquidTabsPanel>
+</LiquidTabs>;
+```
+
+## Anatomy
+
+```text
+LiquidTabs              Base UI Tabs.Root
+  LiquidTabsList          Base UI Tabs.List
+    <pill>                  Stretches between the old and new active tab
+    LiquidTabsTrigger       Base UI Tabs.Tab
+      <highlight>             The same label again, clipped to the pill
+  LiquidTabsPanel         Base UI Tabs.Panel
+```

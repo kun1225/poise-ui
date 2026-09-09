@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { AccordionDemo } from "@/components/demos/accordion/default";
 import { AccordionStaggerDemo } from "@/components/demos/accordion/stagger";
+import { LiquidTabDemo } from "@/components/demos/liquid-tab/default";
 import { MorphAccordionDemo } from "@/components/demos/morph-accordion/default";
 import { MorphAccordionDepthDemo } from "@/components/demos/morph-accordion/depth";
 import { MorphAccordionGapDemo } from "@/components/demos/morph-accordion/gap";
@@ -22,6 +23,7 @@ import { SliderDemo } from "@/components/demos/slider/default";
 import { SliderRigidDemo } from "@/components/demos/slider/rigid";
 import { SliderStepsDemo } from "@/components/demos/slider/steps";
 import { SliderTwoDemo } from "@/components/demos/slider/two-slider";
+import { TabDemo } from "@/components/demos/tab/default";
 import { PreviewPanel } from "@/components/preview-panel";
 import { Fragment } from "react";
 
@@ -57,6 +59,10 @@ const demos = {
   "morph-accordion-gap": {
     node: <MorphAccordionGapDemo />,
     src: "morph-accordion/gap.tsx",
+  },
+  "liquid-tab": {
+    node: <LiquidTabDemo />,
+    src: "liquid-tab/default.tsx",
   },
   "morph-select": {
     node: <MorphSelectDemo />,
@@ -104,6 +110,7 @@ const demos = {
   "slider-two": { node: <SliderTwoDemo />, src: "slider/two-slider.tsx" },
   "slider-steps": { node: <SliderStepsDemo />, src: "slider/steps.tsx" },
   "slider-rigid": { node: <SliderRigidDemo />, src: "slider/rigid.tsx" },
+  tab: { node: <TabDemo />, src: "tab/default.tsx" },
 } as const;
 
 export type DemoName = keyof typeof demos;

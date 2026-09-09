@@ -6,6 +6,8 @@
     "select",
     "morph-select",
     "morph-tab",
+    "tab",
+    "liquid-tab",
     "slider",
     "relight-image"
   ]

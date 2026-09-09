@@ -1,0 +1,32 @@
+---
+title: Tab
+description: Tabs with a rule that slides and resizes under the active label.
+---
+
+<ComponentPreview name="tab" />
+
+## Usage
+
+```tsx
+import { Tabs, TabsList, TabsPanel, TabsTrigger } from "@/components/ui/tab";
+
+<Tabs defaultValue="overview">
+  <TabsList>
+    <TabsTrigger value="overview">Overview</TabsTrigger>
+    <TabsTrigger value="settings">Settings</TabsTrigger>
+  </TabsList>
+
+  <TabsPanel value="overview">Overview panel content.</TabsPanel>
+  <TabsPanel value="settings">Settings panel content.</TabsPanel>
+</Tabs>;
+```
+
+## Anatomy
+
+```text
+Tabs            Base UI Tabs.Root
+  TabsList        Base UI Tabs.List
+    TabsTrigger     Base UI Tabs.Tab
+    <rule>          Slides and resizes to the active trigger
+  TabsPanel       Base UI Tabs.Panel
+```

@@ -142,7 +142,7 @@ function TabsList({ className, children, ...props }: TabsListProps) {
     <Primitive.List
       data-slot="tabs-list"
       className={cn(
-        "border-border relative flex w-fit gap-7 border-b pb-3",
+        "border-border relative flex w-fit border-b pb-1",
         className,
       )}
       {...props}
@@ -164,12 +164,14 @@ function TabsList({ className, children, ...props }: TabsListProps) {
  * be the word. The row's spacing lives on the list's `gap` instead.
  */
 const tabsTrigger = cn(
-  "text-muted-fg relative flex h-11 cursor-pointer items-center text-[15px] leading-none font-medium tracking-tight whitespace-nowrap",
+  "text-muted-fg relative flex h-8 cursor-pointer items-center px-4 text-[15px] leading-none font-medium tracking-tight whitespace-nowrap",
   "not-data-active:hover:text-fg",
   "data-active:text-fg",
   "focus-visible:outline-ring rounded-xs outline-2 outline-transparent focus-visible:outline-offset-4",
   "data-disabled:text-muted-fg/50 data-disabled:pointer-events-none",
   "duration-base ease-standard transition-colors",
+  "before:duration-base before:ease-standard before:absolute before:inset-0 before:-z-10 before:rounded-md before:transition-colors",
+  "not-data-active:hover:before:bg-muted",
 );
 
 export type TabsTriggerProps = Omit<Primitive.Tab.Props, "render">;
