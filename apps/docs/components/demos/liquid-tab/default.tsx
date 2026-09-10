@@ -14,17 +14,9 @@ export function LiquidTabDemo() {
         <LiquidTabsTrigger value="settings">Settings</LiquidTabsTrigger>
       </LiquidTabsList>
 
-      <LiquidTabsPanel value="overview">
-        The pill stretches across the gap when it travels, then pulls back
-        together.
-      </LiquidTabsPanel>
-      <LiquidTabsPanel value="analytics">
-        Its two edges move at different speeds, so it always reads as
-        travelling rather than appearing.
-      </LiquidTabsPanel>
-      <LiquidTabsPanel value="settings">
-        Only the pill moves - the panel below is plain text.
-      </LiquidTabsPanel>
+      <LiquidTabsPanel value="overview"></LiquidTabsPanel>
+      <LiquidTabsPanel value="analytics"></LiquidTabsPanel>
+      <LiquidTabsPanel value="settings"></LiquidTabsPanel>
     </LiquidTabs>
   );
 }

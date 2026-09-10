@@ -1,16 +1,5 @@
 "use client";
 
-/*
- * Decided from the /proto/morph-tab picker.
- * - Direction: one pill travelling inside a track, with edges that arrive at
- *   different speeds, so the fill stretches across the gap and pulls back
- *   together. Not a single sprung rect - that reads as a plain slide.
- * - Rejected: the "Lift" direction (active tab scales out of a bordered strip)
- *   - the shadow read heavier than the rest of the set, and the label softened
- *   while it scaled.
- * - Rejected: <MorphTabs>'s push model here - its neighbours move outside the
- *   list's own box, which collides with anything sitting beside it.
- */
 import { Tabs as Primitive } from "@base-ui/react/tabs";
 import { cn } from "@poise-ui/shared";
 import {
@@ -35,13 +24,8 @@ import {
   type Ref,
 } from "react";
 
-/**
- * The edge moving into open space, and the one dragged after it. The distance
- * between them during the crossing is the whole effect, so they are a pair -
- * closing the gap between these two numbers flattens it back to a slide.
- */
-const LEAD = { type: "spring", visualDuration: 0.22, bounce: 0.16 } as const;
-const TRAIL = { type: "spring", visualDuration: 0.46, bounce: 0.22 } as const;
+const LEAD = { type: "spring", visualDuration: 0.2, bounce: 0.16 } as const;
+const TRAIL = { type: "spring", visualDuration: 0.4, bounce: 0.32 } as const;
 
 type LiquidRootContextValue = {
   reportActive: (element: HTMLElement, active: boolean) => void;
@@ -68,12 +52,6 @@ export type LiquidTabsProps = Omit<
   "render" | "orientation"
 >;
 
-/**
- * Base UI can name the active tab but not place it among its siblings, so the
- * active tab reports its own element here and the pill measures against it.
- * The two edges stay motion values so the labels can clip against them per
- * frame without re-rendering.
- */
 function LiquidTabs({ className, ...props }: LiquidTabsProps) {
   const [activeElement, setActiveElement] = useState<HTMLElement | null>(null);
   const left = useMotionValue(0);
@@ -163,11 +141,6 @@ function LiquidTabsList({
       className={cn("bg-muted relative flex w-fit rounded-lg p-1", className)}
       {...props}
     >
-      {/*
-       * One element for the whole strip rather than a fill per tab: mid-travel
-       * the pill spans two tabs, and per-tab fills would round their touching
-       * edges and split it in half.
-       */}
       <motion.span
         aria-hidden="true"
         data-slot="liquid-tabs-pill"
@@ -215,9 +188,7 @@ type LiquidTabSurfaceProps = ComponentProps<"button"> & {
 };
 
 /**
- * The label is drawn twice so the pill can clip the accent copy to a
- * rectangle: a colour swap would flip a whole label at once, where a clip lets
- * the stretched fill's edge cut the letters as it passes.
+ * The label is drawn twice so the pill can clip the accent copy to a rectangle.
  */
 function LiquidTabSurface({
   active,
@@ -259,8 +230,6 @@ function LiquidTabSurface({
     const [start = 0, end = 0] = latest;
     const element = elementRef.current;
 
-    // Nothing measured yet - on the server, and before the first layout.
-    // Lighting the active tab whole is what the measurement will confirm.
     if (!element || end - start === 0) {
       return activeRef.current ? "inset(0)" : "inset(0 100% 0 0)";
     }
