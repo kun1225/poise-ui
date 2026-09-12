@@ -3,6 +3,9 @@ import path from "node:path";
 import { AccordionDemo } from "@/components/demos/accordion/default";
 import { AccordionStaggerDemo } from "@/components/demos/accordion/stagger";
 import { LiquidTabDemo } from "@/components/demos/liquid-tab/default";
+import { LiquidTabIconDemo } from "@/components/demos/liquid-tab/icon";
+import { LiquidTabIconEndDemo } from "@/components/demos/liquid-tab/icon-end";
+import { LiquidTabIconsAllDemo } from "@/components/demos/liquid-tab/icons-all";
 import { MorphAccordionDemo } from "@/components/demos/morph-accordion/default";
 import { MorphAccordionDepthDemo } from "@/components/demos/morph-accordion/depth";
 import { MorphAccordionGapDemo } from "@/components/demos/morph-accordion/gap";
@@ -63,6 +66,18 @@ const demos = {
   "liquid-tab": {
     node: <LiquidTabDemo />,
     src: "liquid-tab/default.tsx",
+  },
+  "liquid-tab-icon": {
+    node: <LiquidTabIconDemo />,
+    src: "liquid-tab/icon.tsx",
+  },
+  "liquid-tab-icons-all": {
+    node: <LiquidTabIconsAllDemo />,
+    src: "liquid-tab/icons-all.tsx",
+  },
+  "liquid-tab-icon-end": {
+    node: <LiquidTabIconEndDemo />,
+    src: "liquid-tab/icon-end.tsx",
   },
   "morph-select": {
     node: <MorphSelectDemo />,

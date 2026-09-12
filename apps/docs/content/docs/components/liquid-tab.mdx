@@ -26,6 +26,41 @@ import {
 </LiquidTabs>;
 ```
 
+## Options
+
+`LiquidTabsTrigger` takes an icon, and `LiquidTabs` says how icons behave.
+
+| Prop           | Default    | Effect                                   |
+| -------------- | ---------- | ---------------------------------------- |
+| `icon`         | —          | Node drawn beside the trigger's label.   |
+| `icons`        | `"active"` | `"all"` shows every icon instead of one. |
+| `iconPosition` | `"start"`  | `"end"` puts the icon after the label.   |
+
+Give every trigger an icon, or none.
+A trigger with an icon is 22px wider than one without.
+
+### icon
+
+<ComponentPreview name="liquid-tab-icon" />
+
+Only the active tab shows its icon.
+The rest keep theirs scaled down, faded out and blurred, and their label sits
+centred in the tab on its own.
+
+The slot holds its space either way, so a tab never changes width.
+
+### icons
+
+`"all"` shows every icon, so no label moves.
+
+<ComponentPreview name="liquid-tab-icons-all" />
+
+### iconPosition
+
+`"end"` puts the icon after the label, so the label moves left to make room.
+
+<ComponentPreview name="liquid-tab-icon-end" />
+
 ## Anatomy
 
 ```text
@@ -33,6 +68,11 @@ LiquidTabs              Base UI Tabs.Root
   LiquidTabsList          Base UI Tabs.List
     <pill>                  Stretches between the old and new active tab
     LiquidTabsTrigger       Base UI Tabs.Tab
-      <highlight>             The same label again, clipped to the pill
+      <content>               Icon and label, shifted so the label reads centred
+      <highlight>             The same content again, clipped to the pill
   LiquidTabsPanel         Base UI Tabs.Panel
 ```
+
+The icon never changes the tab's width - it only scales, fades and blurs, and
+the label translates past it. The pill measures tab boxes, so a tab resizing
+mid-travel would reach it as a resize and snap it to its target.

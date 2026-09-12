@@ -37,8 +37,8 @@ export type Ease = {
 };
 
 export const eases = {
-  /** Fades, color shifts, anything without a resting position. */
-  standard: { type: "tween", duration: 0.2, ease: [0.4, 0, 0.2, 1] },
+  standard: { type: "tween", duration: 0.18, ease: [0.4, 0, 0.2, 1] },
+  middle: { type: "tween", duration: 0.24, ease: [0.4, 0, 0.2, 1] },
 } as const satisfies Record<string, Ease>;
 
 export type EaseName = keyof typeof eases;
