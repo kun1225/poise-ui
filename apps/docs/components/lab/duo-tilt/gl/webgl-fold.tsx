@@ -51,9 +51,6 @@ export function WebglFold({
       lastTime = time;
       const angle = tilt.tick(dt);
 
-      // clientWidth/clientHeight, not getBoundingClientRect: the canvas
-      // below carries a rotateY/scaleX transform, and the rect would report
-      // its skewed on-screen box instead of its actual layout size.
       renderer!.resize(canvas!.clientWidth, canvas!.clientHeight, pixelRatio);
       renderer!.draw(angle, config);
       applyFoldPose(canvas!, foldPose(angle));

@@ -49,12 +49,7 @@ const UNIFORM_NAMES = [
 
 type UniformName = (typeof UNIFORM_NAMES)[number];
 
-/**
- * One fullscreen-triangle draw per frame. `setImage` re-uploads the texture
- * (a hard cut, no crossfade - solotilt's crossfade is tied to its multi-image
- * carousel, which this lab demo doesn't have). `draw` is cheap enough to call
- * every frame even when the angle hasn't changed.
- */
+/** WebGL renderer for the fold image and effects. */
 export class DuoTiltRenderer {
   private gl: WebGL2RenderingContext | null = null;
   private program: WebGLProgram | null = null;
@@ -129,7 +124,6 @@ export class DuoTiltRenderer {
 
     const canvasAspect = this.canvas.width / Math.max(this.canvas.height, 1);
     const imageAspect = image.naturalWidth / Math.max(image.naturalHeight, 1);
-    // object-fit: cover, expressed as the same UV scale solotilt's shader uses.
     this.coverScale =
       imageAspect > canvasAspect
         ? [canvasAspect / imageAspect, 1]

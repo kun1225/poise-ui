@@ -16,7 +16,7 @@ export function DuoTiltDemo() {
   const tilt = useDeviceTilt();
   const [renderer, setRenderer] = useState<Renderer>("css");
   const [imageSrc, setImageSrc] = useState(DEFAULT_IMAGE);
-  const dragging = useRef(false);
+  const drag = useRef({ active: false, lastX: 0, lastTime: 0, velocity: 0 });
   const objectUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -34,23 +34,38 @@ export function DuoTiltDemo() {
     setImageSrc(url);
   }
 
-  function angleFromPointerX(clientX: number) {
-    const fraction = clientX / window.innerWidth;
-    return (fraction * 2 - 1) * 180;
-  }
-
   function handlePointerDown(event: React.PointerEvent) {
-    dragging.current = true;
-    tilt.setManualAngle(angleFromPointerX(event.clientX));
+    drag.current = {
+      active: true,
+      lastX: event.clientX,
+      lastTime: event.timeStamp,
+      velocity: 0,
+    };
+    tilt.dragStart();
   }
 
   function handlePointerMove(event: React.PointerEvent) {
-    if (!dragging.current) return;
-    tilt.setManualAngle(angleFromPointerX(event.clientX));
+    const { active, lastX, lastTime, velocity } = drag.current;
+    if (!active) return;
+
+    const deltaX = event.clientX - lastX;
+    const deltaTime = event.timeStamp - lastTime;
+    const sampled = deltaTime > 0 ? (deltaX / deltaTime) * 1000 : velocity;
+
+    drag.current = {
+      active: true,
+      lastX: event.clientX,
+      lastTime: event.timeStamp,
+      velocity: velocity * 0.6 + sampled * 0.4,
+    };
+    tilt.dragBy(deltaX);
   }
 
   function handlePointerUp() {
-    dragging.current = false;
+    if (!drag.current.active) return;
+    const { velocity } = drag.current;
+    drag.current = { active: false, lastX: 0, lastTime: 0, velocity: 0 };
+    tilt.dragEnd(velocity);
   }
 
   return (

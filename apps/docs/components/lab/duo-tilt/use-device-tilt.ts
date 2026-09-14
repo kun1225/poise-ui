@@ -1,11 +1,17 @@
 "use client";
 
-/*
- * Ported from solotilt.com's motion input, minus the parts neither renderer
- * needs (facingDown, the raw gravity vector). Both the CSS and WebGL fold
- * renderers read the same smoothed angle from this one hook.
- */
+/** Shared motion input for the CSS and WebGL renderers. */
 import { useCallback, useEffect, useRef, useState } from "react";
+
+import { springAt, springStep } from "./spring";
+import {
+  clampFold,
+  DEGREES_PER_PIXEL,
+  FOLD_SPRING,
+  LERP_DRAG,
+  rubberBand,
+  THROW_SECONDS,
+} from "./tilt-motion";
 
 export type TiltStatus =
   "idle" | "requesting" | "waiting" | "active" | "unavailable";
@@ -13,27 +19,21 @@ export type TiltStatus =
 export interface DeviceTilt {
   status: TiltStatus;
   message: string;
-  /** Call from a tap/click handler - iOS only grants motion access inside a user gesture. */
+  /** Call from a user gesture to request iOS motion access. */
   enable: () => void;
-  /** Desktop fallback: drag across the page instead of tilting a phone. */
-  setManualAngle: (angleDeg: number) => void;
-  /**
-   * Advances the exponential smoothing filter by `dtSeconds` and returns the
-   * current angle, -180 (closed, hinge left) to 180 (closed, hinge right).
-   * Call once per render frame from whichever renderer is mounted.
-   */
+  /** Desktop drag fallback. */
+  dragStart: () => void;
+  /** Horizontal pointer movement in CSS pixels. */
+  dragBy: (deltaPx: number) => void;
+  /** Release with pointer velocity in pixels per second. */
+  dragEnd: (velocityPxPerSecond: number) => void;
+  /** Advance smoothing and return the current angle from -180 to 180 degrees. */
   tick: (dtSeconds: number) => number;
 }
 
 const READING_TIMEOUT_MS = 4000;
-/** Matches solotilt's smoothing time constant: current += (target-current) * (1-e^-dt*16). */
-const SMOOTHING_RATE = 16;
 
-/**
- * Gravity, isolated from user acceleration by subtraction, gives a stable
- * "which way is down" reading even while the phone is being moved. The fold
- * angle is 2x the physical tilt so a comfortable wrist turn fully closes it.
- */
+/** Convert device motion into a fold angle. */
 function sampleGravityAngle(
   event: DeviceMotionEvent,
   sign: number,
@@ -72,7 +72,8 @@ export function useDeviceTilt(): DeviceTilt {
   const [message, setMessage] = useState("");
 
   const targetAngle = useRef(0);
-  const smoothedAngle = useRef(0);
+  const pose = useRef(springAt(0));
+  const draggingRef = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const grantedRef = useRef(false);
   const gotReadingRef = useRef(false);
@@ -94,8 +95,9 @@ export function useDeviceTilt(): DeviceTilt {
       if (angle === null) return;
       gotReadingRef.current = true;
       clearTimer();
-      targetAngle.current = angle;
       setStatus("active");
+      if (draggingRef.current) return;
+      targetAngle.current = angle;
     }
 
     function startListening() {
@@ -170,19 +172,43 @@ export function useDeviceTilt(): DeviceTilt {
     void requestAccess();
   }, []);
 
-  const setManualAngle = useCallback((angleDeg: number) => {
-    targetAngle.current = Math.max(-180, Math.min(180, angleDeg));
+  const dragStart = useCallback(() => {
+    draggingRef.current = true;
+    targetAngle.current = pose.current.value;
+  }, []);
+
+  const dragBy = useCallback((deltaPx: number) => {
+    if (!draggingRef.current) return;
+    targetAngle.current = rubberBand(
+      targetAngle.current + deltaPx * DEGREES_PER_PIXEL,
+    );
+  }, []);
+
+  const dragEnd = useCallback((velocityPxPerSecond: number) => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    const thrown =
+      targetAngle.current +
+      velocityPxPerSecond * THROW_SECONDS * DEGREES_PER_PIXEL;
+    targetAngle.current = clampFold(rubberBand(thrown));
   }, []);
 
   const tick = useCallback((dtSeconds: number) => {
-    const current = smoothedAngle.current;
-    const target = targetAngle.current;
-    const next =
-      current +
-      (target - current) * (1 - Math.exp(-dtSeconds * SMOOTHING_RATE));
-    smoothedAngle.current = Math.abs(target - next) < 0.001 ? target : next;
-    return smoothedAngle.current;
+    if (draggingRef.current) {
+      const k = 1 - Math.pow(1 - LERP_DRAG, dtSeconds * 60);
+      const next =
+        pose.current.value + (targetAngle.current - pose.current.value) * k;
+      pose.current = { value: clampFold(next), velocity: 0, moving: true };
+      return pose.current.value;
+    }
+    pose.current = springStep(
+      pose.current,
+      targetAngle.current,
+      dtSeconds,
+      FOLD_SPRING,
+    );
+    return pose.current.value;
   }, []);
 
-  return { status, message, enable, setManualAngle, tick };
+  return { status, message, enable, dragStart, dragBy, dragEnd, tick };
 }

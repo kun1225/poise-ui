@@ -1,19 +1,4 @@
-/**
- * Ported from solotilt.com's fold fragment shader, minus two things: their
- * multi-image crossfade/audience overlay (not needed - one photo), and their
- * inverse-perspective UV remap. That remap existed because solotilt's canvas
- * IS the whole device viewport, so it can't lean the canvas element itself in
- * 3D - it has to fake the foreshortening per pixel. This renderer's canvas is
- * a normal DOM element that gets the same `rotateY` the CSS renderer uses
- * (see fold-transform.ts), so the browser's real 3D projection does that job.
- * What's left here is exactly what CSS can't do: a true per-pixel
- * depth-of-field, plus the glass darken/specular/black-fade.
- *
- * Depth-of-field samples a `textureLod` mip chain built by
- * `gl.generateMipmap` - a fast hardware box filter, not solotilt's separate
- * Gaussian-blurred pyramid. Blurrier at the same LOD, otherwise the same
- * shape of falloff.
- */
+/** Fragment shader for depth-of-field and fold lighting effects. */
 
 /** No attributes: a fullscreen triangle generated from gl_VertexID. */
 export const VERTEX_SHADER = `#version 300 es
@@ -51,9 +36,6 @@ void main() {
     return;
   }
 
-  // The DOM element this draws into is already leaned in 3D (see
-  // fold-transform.ts), so no perspective remap here - just grade the flat
-  // photo by distance from the hinge, in the panel's own UV space.
   float outer = step(0.5, u_phase);
   float hinge = mix(1.0, 0.0, outer);
   float fromHinge = abs(v_uv.x - hinge);

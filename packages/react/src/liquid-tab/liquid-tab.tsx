@@ -51,7 +51,6 @@ export type LiquidTabsIcons = "active" | "all";
 export type LiquidTabsIconPosition = "start" | "end";
 
 type LiquidRootContextValue = {
-  reportActive: (element: HTMLElement, active: boolean) => void;
   left: MotionValue<number>;
   right: MotionValue<number>;
   icons: LiquidTabsIcons;
@@ -86,74 +85,20 @@ function LiquidTabs({
   iconPosition = "start",
   ...props
 }: LiquidTabsProps) {
-  const [activeElement, setActiveElement] = useState<HTMLElement | null>(null);
   const left = useMotionValue(0);
   const right = useMotionValue(0);
-  const placed = useRef(false);
-  const [pillPlaced, setPillPlaced] = useState(false);
-  const reduced = useReducedMotion() ?? false;
-
-  // Switching tabs deactivates one and activates another in the same commit,
-  // so a tab may only clear the slot it still holds.
-  const reportActive = useCallback((element: HTMLElement, active: boolean) => {
-    setActiveElement((current) => {
-      if (active) return current === element ? current : element;
-      return current === element ? null : current;
-    });
-  }, []);
-
-  useLayoutEffect(() => {
-    const element = activeElement;
-    if (!element) return;
-
-    const settle = (sprung: boolean) => {
-      const nextLeft = element.offsetLeft;
-      const nextRight = nextLeft + element.offsetWidth;
-
-      if (!sprung) {
-        left.set(nextLeft);
-        right.set(nextRight);
-        return;
-      }
-      const forward = nextLeft > left.get();
-      animate(left, nextLeft, forward ? TRAIL : LEAD);
-      animate(right, nextRight, forward ? LEAD : TRAIL);
-    };
-
-    settle(placed.current && !reduced);
-    placed.current = true;
-    setPillPlaced(true);
-
-    // A ResizeObserver reports once on observe, and that call is the
-    // measurement just taken - letting it through would cut the stretch short.
-    let observed = false;
-    const observer = new ResizeObserver(() => {
-      if (!observed) {
-        observed = true;
-        return;
-      }
-      settle(false);
-    });
-    observer.observe(element);
-
-    return () => observer.disconnect();
-  }, [activeElement, reduced, left, right]);
 
   const context = useMemo(
-    () => ({ reportActive, left, right, icons, iconPosition }),
-    [reportActive, left, right, icons, iconPosition],
+    () => ({ left, right, icons, iconPosition }),
+    [left, right, icons, iconPosition],
   );
 
   return (
     <LiquidRootContext value={context}>
       <Primitive.Root
         data-slot="liquid-tabs"
-        data-pill={pillPlaced ? undefined : "pending"}
         orientation="horizontal"
-        className={cn(
-          "group/liquid-tabs isolate flex flex-col gap-2",
-          className,
-        )}
+        className={cn("isolate flex flex-col gap-2", className)}
         {...props}
       />
     </LiquidRootContext>
@@ -170,30 +115,122 @@ function LiquidTabsList({
   ...props
 }: LiquidTabsListProps) {
   const { left, right } = useLiquidRoot("LiquidTabsList");
-  const width = useTransform([left, right], (latest: number[]) =>
-    Math.max((latest[1] ?? 0) - (latest[0] ?? 0), 0),
-  );
+  const [pillPlaced, setPillPlaced] = useState(false);
 
   return (
     <Primitive.List
       data-slot="liquid-tabs-list"
-      className={cn("bg-muted relative flex w-fit rounded-lg p-1", className)}
+      data-pill={pillPlaced ? undefined : "pending"}
+      className={cn(
+        "group/liquid-tabs-list bg-muted relative flex w-fit rounded-lg p-1",
+        className,
+      )}
       {...props}
     >
-      <motion.span
-        aria-hidden="true"
+      <Primitive.Indicator
         data-slot="liquid-tabs-pill"
-        className="bg-accent pointer-events-none absolute inset-y-1 left-0 z-0 rounded-md"
-        style={{ x: left, width }}
+        render={(renderProps, state) => (
+          <LiquidTabsIndicator
+            {...renderProps}
+            activeTabPosition={state.activeTabPosition}
+            activeTabSize={state.activeTabSize}
+            onPlaced={() => setPillPlaced(true)}
+          />
+        )}
       />
       {children}
     </Primitive.List>
   );
 }
 
+type LiquidTabsIndicatorProps = ComponentProps<"span"> & {
+  activeTabPosition: Primitive.Indicator.State["activeTabPosition"];
+  activeTabSize: Primitive.Indicator.State["activeTabSize"];
+  onPlaced: () => void;
+};
+
+function LiquidTabsIndicator({
+  activeTabPosition,
+  activeTabSize,
+  onPlaced,
+  ref,
+  ...props
+}: LiquidTabsIndicatorProps) {
+  const { left, right } = useLiquidRoot("LiquidTabsIndicator");
+  const reduced = useReducedMotion() ?? false;
+  const width = useTransform([left, right], (latest: number[]) =>
+    Math.max((latest[1] ?? 0) - (latest[0] ?? 0), 0),
+  );
+  const placed = useRef(false);
+  const activeTabRef = useRef<HTMLElement | null>(null);
+  const targetRef = useRef<{ left: number; right: number } | null>(null);
+  const animationsRef = useRef<{ stop: () => void }[]>([]);
+  const indicatorRef = useRef<HTMLSpanElement | null>(null);
+  const setRef = useCallback(
+    (element: HTMLSpanElement | null) => {
+      indicatorRef.current = element;
+      if (typeof ref === "function") ref(element);
+      else if (ref) ref.current = element;
+    },
+    [ref],
+  );
+  const nextLeft = activeTabPosition?.left ?? null;
+  const nextWidth = activeTabSize?.width ?? null;
+
+  useLayoutEffect(() => {
+    if (nextLeft == null || nextWidth == null || nextWidth <= 0) return;
+
+    const activeTab =
+      indicatorRef.current?.parentElement?.querySelector<HTMLElement>(
+        "[data-active]",
+      ) ?? null;
+    const changedTab = activeTab !== activeTabRef.current;
+    const nextRight = nextLeft + nextWidth;
+    const previousTarget = targetRef.current;
+    const repeatedTarget =
+      previousTarget?.left === nextLeft && previousTarget.right === nextRight;
+
+    // Base UI may report the same geometry again after its direction state
+    // commits. Snapping that duplicate would flash the destination for a frame.
+    if (repeatedTarget) return;
+
+    for (const animation of animationsRef.current) animation.stop();
+    animationsRef.current = [];
+
+    if (!placed.current || reduced || !changedTab) {
+      left.set(nextLeft);
+      right.set(nextRight);
+    } else {
+      const forward = nextLeft > left.get();
+      animationsRef.current = [
+        animate(left, nextLeft, forward ? TRAIL : LEAD),
+        animate(right, nextRight, forward ? LEAD : TRAIL),
+      ];
+    }
+
+    activeTabRef.current = activeTab;
+    targetRef.current = { left: nextLeft, right: nextRight };
+    placed.current = true;
+    onPlaced();
+  }, [left, nextLeft, nextWidth, onPlaced, reduced, right]);
+
+  return (
+    <motion.span
+      {...(props as HTMLMotionProps<"span">)}
+      aria-hidden="true"
+      ref={setRef}
+      className={cn(
+        "bg-accent pointer-events-none absolute inset-y-1 left-0 z-0 rounded-md",
+        props.className,
+      )}
+      style={{ ...props.style, x: left, width }}
+    />
+  );
+}
+
 const liquidTabStandIn = cn(
-  "group-data-[pill=pending]/liquid-tabs:data-active:bg-accent",
-  "group-data-[pill=pending]/liquid-tabs:data-active:text-accent-fg",
+  "group-data-[pill=pending]/liquid-tabs-list:data-active:bg-accent",
+  "group-data-[pill=pending]/liquid-tabs-list:data-active:text-accent-fg",
 );
 
 const liquidTabTrigger = cn(
@@ -319,7 +356,7 @@ function LiquidTabSurface({
   children,
   ...props
 }: LiquidTabSurfaceProps) {
-  const { reportActive, left, right, icons, iconPosition } =
+  const { left, right, icons, iconPosition } =
     useLiquidRoot("LiquidTabsTrigger");
   const reduced = useReducedMotion() ?? false;
   const elementRef = useRef<HTMLButtonElement>(null);
@@ -334,15 +371,6 @@ function LiquidTabSurface({
     if (typeof next === "function") next(element);
     else if (next) next.current = element;
   }, []);
-
-  // Layout, not passive: the report has to land before paint, or the pill
-  // would start moving a frame late.
-  useLayoutEffect(() => {
-    const element = elementRef.current;
-    if (!active || !element) return;
-    reportActive(element, true);
-    return () => reportActive(element, false);
-  }, [active, reportActive]);
 
   const clipPath = useTransform([left, right], (latest: number[]) => {
     const [start = 0, end = 0] = latest;

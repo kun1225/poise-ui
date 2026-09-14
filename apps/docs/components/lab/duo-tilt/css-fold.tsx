@@ -1,13 +1,6 @@
 "use client";
 
-/*
- * The CSS renderer takes a shortcut solotilt's WebGL version can't: a real
- * `rotateY` under a `perspective` parent already foreshortens the image the
- * way the shader computes by hand, per pixel. What CSS can't do is vary blur
- * across the panel - so the depth-of-field here is a fake: a blurred copy of
- * the same image, cross-faded in toward the far edge with a mask. Good
- * enough up close; a real per-pixel blur is what the WebGL renderer is for.
- */
+/** CSS implementation of the fold and its approximate depth-of-field effect. */
 import { useEffect, useRef } from "react";
 
 import { DEFAULT_BLUR_CONFIG, type BlurConfig } from "./blur-config";
