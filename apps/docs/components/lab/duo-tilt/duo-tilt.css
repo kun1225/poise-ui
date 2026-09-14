@@ -1,0 +1,51 @@
+.duo-tilt-stage {
+  display: flex;
+  aspect-ratio: 9 / 19.5;
+  width: min(320px, 80vw);
+  transform-style: preserve-3d;
+}
+
+.duo-tilt-panel {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 2.25rem;
+  background: #000;
+  box-shadow: 0 30px 60px -20px rgb(0 0 0 / 0.5);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.duo-tilt-photo-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  will-change: opacity, filter;
+}
+
+.duo-tilt-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+
+.duo-tilt-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+.duo-tilt-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 2.25rem;
+  background: #000;
+  box-shadow: 0 30px 60px -20px rgb(0 0 0 / 0.5);
+  will-change: transform;
+}
