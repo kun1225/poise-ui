@@ -1,12 +1,13 @@
 "use client";
 
 import { Tabs as Primitive } from "@base-ui/react/tabs";
-import { springs } from "@poise-ui/motion";
+import { eases, springs } from "@poise-ui/motion";
 import { cn } from "@poise-ui/shared";
 import {
   animate,
   motion,
   useMotionValue,
+  useReducedMotion,
   useTransform,
   type HTMLMotionProps,
   type MotionValue,
@@ -20,12 +21,29 @@ import {
   useRef,
   useState,
   type ComponentProps,
+  type ReactNode,
   type Ref,
   type RefObject,
 } from "react";
 
 /** Not `--radius-md`: `@theme inline` names resolve to nothing at runtime. */
 const HIGHLIGHT_RADIUS = "var(--poise-radius-md)";
+
+const ICON_SIZE = 16;
+const ICON_GAP = 6;
+const LABEL_SHIFT = (ICON_SIZE + ICON_GAP) / 2;
+
+const ICON_MOTION = {
+  ...springs.snappy,
+  opacity: eases.standard,
+  filter: eases.standard,
+} as const;
+const NO_MOTION = { duration: 0 } as const;
+
+/** Whether every tab shows its icon, or only the active one. */
+export type MorphTabsIcons = "active" | "all";
+/** Which side of the label the icon sits on. */
+export type MorphTabsIconPosition = "start" | "end";
 
 type MorphOrientation = NonNullable<Primitive.Root.Props["orientation"]>;
 
@@ -36,6 +54,8 @@ type MorphRootContextValue = {
   reportActive: (element: HTMLElement, active: boolean) => void;
   highlightStart: MotionValue<number>;
   highlightSize: MotionValue<number>;
+  icons: MorphTabsIcons;
+  iconPosition: MorphTabsIconPosition;
 };
 
 const MorphRootContext = createContext<MorphRootContextValue | null>(null);
@@ -54,6 +74,8 @@ const clamp = (value: number, max: number) =>
 export type MorphTabsProps = Omit<Primitive.Root.Props, "render"> & {
   /** Pixels a neighbouring tab moves clear of the active one. */
   gap?: number;
+  icons?: MorphTabsIcons;
+  iconPosition?: MorphTabsIconPosition;
 };
 
 /**
@@ -66,6 +88,8 @@ function MorphTabs({
   className,
   orientation = "horizontal",
   gap = 12,
+  icons = "active",
+  iconPosition = "start",
   ...props
 }: MorphTabsProps) {
   const [activeElement, setActiveElement] = useState<HTMLElement | null>(null);
@@ -129,6 +153,8 @@ function MorphTabs({
       reportActive,
       highlightStart,
       highlightSize,
+      icons,
+      iconPosition,
     }),
     [
       gap,
@@ -137,6 +163,8 @@ function MorphTabs({
       reportActive,
       highlightStart,
       highlightSize,
+      icons,
+      iconPosition,
     ],
   );
 
@@ -195,16 +223,23 @@ const morphTabTrigger = cn(
   "duration-base ease-standard transition-[border-color,border-radius,background-color,color]",
 );
 
-export type MorphTabsTriggerProps = Omit<Primitive.Tab.Props, "render">;
+export type MorphTabsTriggerProps = Omit<Primitive.Tab.Props, "render"> & {
+  /** Decorative - the label names the tab. */
+  icon?: ReactNode;
+};
 
-function MorphTabsTrigger({ className, ...props }: MorphTabsTriggerProps) {
+function MorphTabsTrigger({
+  className,
+  icon,
+  ...props
+}: MorphTabsTriggerProps) {
   return (
     <Primitive.Tab
       data-slot="morph-tabs-trigger"
       className={cn(morphTabTrigger, className)}
       {...props}
       render={(renderProps, state) => (
-        <MorphTabSurface {...renderProps} active={state.active} />
+        <MorphTabSurface {...renderProps} active={state.active} icon={icon} />
       )}
     />
   );
@@ -227,8 +262,70 @@ const mergeRefs =
 
 type MorphTabSurfaceProps = ComponentProps<"button"> & {
   active: boolean;
+  icon?: ReactNode;
   ref?: Ref<HTMLButtonElement>;
 };
+
+type MorphTabContentProps = {
+  icon?: ReactNode;
+  shown: boolean;
+  position: MorphTabsIconPosition;
+  reduced: boolean;
+  children?: ReactNode;
+};
+
+function MorphTabContent({
+  icon,
+  shown,
+  position,
+  reduced,
+  children,
+}: MorphTabContentProps) {
+  if (!icon) return <>{children}</>;
+
+  const transition = reduced ? NO_MOTION : ICON_MOTION;
+  const iconNode = (
+    <motion.span
+      aria-hidden="true"
+      data-slot="morph-tabs-trigger-icon"
+      className="flex shrink-0 origin-center items-center justify-center"
+      style={{ width: ICON_SIZE, height: ICON_SIZE }}
+      animate={
+        shown
+          ? { opacity: 1, scale: 1, filter: "blur(0px)", x: 0 }
+          : {
+              opacity: 0,
+              scale: 0.5,
+              filter: "blur(2px)",
+              x: position === "start" ? LABEL_SHIFT : -LABEL_SHIFT,
+            }
+      }
+      // Renders the target on the server and on mount, so a hidden icon is
+      // never painted sharp for a frame before hydration reaches it.
+      initial={false}
+      transition={transition}
+    >
+      {icon}
+    </motion.span>
+  );
+
+  return (
+    <motion.span
+      data-slot="morph-tabs-trigger-content"
+      className="flex items-center"
+      style={{ gap: ICON_GAP }}
+      animate={{
+        x: shown ? 0 : position === "start" ? -LABEL_SHIFT : LABEL_SHIFT,
+      }}
+      initial={false}
+      transition={transition}
+    >
+      {position === "start" && iconNode}
+      {children}
+      {position === "end" && iconNode}
+    </motion.span>
+  );
+}
 
 /**
  * The label is drawn twice so the highlight can clip the accent copy to a
@@ -241,6 +338,7 @@ type MorphTabSurfaceProps = ComponentProps<"button"> & {
  */
 function MorphTabSurface({
   active,
+  icon,
   ref,
   children,
   ...props
@@ -252,7 +350,10 @@ function MorphTabSurface({
     reportActive,
     highlightStart,
     highlightSize,
+    icons,
+    iconPosition,
   } = useMorphRoot("MorphTabsTrigger");
+  const reduced = useReducedMotion() ?? false;
   const elementRef = useRef<HTMLButtonElement>(null);
   const vertical = orientation === "vertical";
   const shift = useMotionValue(0);
@@ -315,20 +416,31 @@ function MorphTabSurface({
     },
   );
 
+  const content = (
+    <MorphTabContent
+      icon={icon}
+      shown={icons === "all" || active}
+      position={iconPosition}
+      reduced={reduced}
+    >
+      {children}
+    </MorphTabContent>
+  );
+
   return (
     <motion.button
       {...asMotionProps(props)}
       ref={mergeRefs(elementRef, ref)}
       style={vertical ? { y: shift } : { x: shift }}
     >
-      {children}
+      {content}
       <motion.span
         aria-hidden="true"
         data-slot="morph-tabs-highlight"
         className="bg-accent text-accent-fg pointer-events-none absolute inset-0 flex items-center justify-center gap-1.5 px-3"
         style={{ clipPath }}
       >
-        {children}
+        {content}
       </motion.span>
     </motion.button>
   );

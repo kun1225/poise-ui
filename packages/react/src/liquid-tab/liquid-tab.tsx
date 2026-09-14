@@ -90,6 +90,7 @@ function LiquidTabs({
   const left = useMotionValue(0);
   const right = useMotionValue(0);
   const placed = useRef(false);
+  const [pillPlaced, setPillPlaced] = useState(false);
   const reduced = useReducedMotion() ?? false;
 
   // Switching tabs deactivates one and activates another in the same commit,
@@ -121,6 +122,7 @@ function LiquidTabs({
 
     settle(placed.current && !reduced);
     placed.current = true;
+    setPillPlaced(true);
 
     // A ResizeObserver reports once on observe, and that call is the
     // measurement just taken - letting it through would cut the stretch short.
@@ -146,8 +148,12 @@ function LiquidTabs({
     <LiquidRootContext value={context}>
       <Primitive.Root
         data-slot="liquid-tabs"
+        data-pill={pillPlaced ? undefined : "pending"}
         orientation="horizontal"
-        className={cn("isolate flex flex-col gap-2", className)}
+        className={cn(
+          "group/liquid-tabs isolate flex flex-col gap-2",
+          className,
+        )}
         {...props}
       />
     </LiquidRootContext>
@@ -185,8 +191,14 @@ function LiquidTabsList({
   );
 }
 
+const liquidTabStandIn = cn(
+  "group-data-[pill=pending]/liquid-tabs:data-active:bg-accent",
+  "group-data-[pill=pending]/liquid-tabs:data-active:text-accent-fg",
+);
+
 const liquidTabTrigger = cn(
   "text-muted-fg relative z-1 flex h-9 cursor-pointer items-center justify-center rounded-md px-4 text-sm font-medium whitespace-nowrap",
+  liquidTabStandIn,
   "not-data-active:hover:text-fg",
   "focus-visible:outline-ring outline-2 outline-transparent focus-visible:outline-offset-2",
   "data-disabled:text-muted-fg/50 data-disabled:pointer-events-none",
@@ -323,13 +335,6 @@ function LiquidTabSurface({
     else if (next) next.current = element;
   }, []);
 
-  // The clip runs on frames of its own, and would otherwise read whichever
-  // render built it.
-  const activeRef = useRef(active);
-  useLayoutEffect(() => {
-    activeRef.current = active;
-  });
-
   // Layout, not passive: the report has to land before paint, or the pill
   // would start moving a frame late.
   useLayoutEffect(() => {
@@ -344,7 +349,7 @@ function LiquidTabSurface({
     const element = elementRef.current;
 
     if (!element || end - start === 0) {
-      return activeRef.current ? "inset(0)" : "inset(0 100% 0 0)";
+      return "inset(0 100% 0 0)";
     }
 
     const own = element.offsetLeft;

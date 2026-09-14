@@ -28,7 +28,7 @@ import {
 
 ## Options
 
-`LiquidTabsTrigger` takes an icon, and `LiquidTabs` says how icons behave.
+`LiquidTabsTrigger` takes an icon; `LiquidTabs` says how icons behave.
 
 | Prop           | Default    | Effect                                   |
 | -------------- | ---------- | ---------------------------------------- |
@@ -36,30 +36,7 @@ import {
 | `icons`        | `"active"` | `"all"` shows every icon instead of one. |
 | `iconPosition` | `"start"`  | `"end"` puts the icon after the label.   |
 
-Give every trigger an icon, or none.
-A trigger with an icon is 22px wider than one without.
-
-### icon
-
 <ComponentPreview name="liquid-tab-icon" />
-
-Only the active tab shows its icon.
-The rest keep theirs scaled down, faded out and blurred, and their label sits
-centred in the tab on its own.
-
-The slot holds its space either way, so a tab never changes width.
-
-### icons
-
-`"all"` shows every icon, so no label moves.
-
-<ComponentPreview name="liquid-tab-icons-all" />
-
-### iconPosition
-
-`"end"` puts the icon after the label, so the label moves left to make room.
-
-<ComponentPreview name="liquid-tab-icon-end" />
 
 ## Anatomy
 

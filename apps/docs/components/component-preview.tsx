@@ -16,6 +16,7 @@ import { MorphSelectScrollDemo } from "@/components/demos/morph-select/scroll";
 import { MorphSelectSideDemo } from "@/components/demos/morph-select/side";
 import { MorphTabDemo } from "@/components/demos/morph-tab/default";
 import { MorphTabGapDemo } from "@/components/demos/morph-tab/gap";
+import { MorphTabIconDemo } from "@/components/demos/morph-tab/icon";
 import { RelightImageDemo } from "@/components/demos/relight-image/default";
 import { SelectAlignItemDemo } from "@/components/demos/select/align-item";
 import { SelectDemo } from "@/components/demos/select/default";
@@ -27,6 +28,7 @@ import { SliderRigidDemo } from "@/components/demos/slider/rigid";
 import { SliderStepsDemo } from "@/components/demos/slider/steps";
 import { SliderTwoDemo } from "@/components/demos/slider/two-slider";
 import { TabDemo } from "@/components/demos/tab/default";
+import { TabIconDemo } from "@/components/demos/tab/icon";
 import { PreviewPanel } from "@/components/preview-panel";
 import { Fragment } from "react";
 
@@ -103,6 +105,10 @@ const demos = {
     node: <MorphTabGapDemo />,
     src: "morph-tab/gap.tsx",
   },
+  "morph-tab-icon": {
+    node: <MorphTabIconDemo />,
+    src: "morph-tab/icon.tsx",
+  },
   "relight-image": {
     node: <RelightImageDemo />,
     src: "relight-image/default.tsx",
@@ -126,6 +132,7 @@ const demos = {
   "slider-steps": { node: <SliderStepsDemo />, src: "slider/steps.tsx" },
   "slider-rigid": { node: <SliderRigidDemo />, src: "slider/rigid.tsx" },
   tab: { node: <TabDemo />, src: "tab/default.tsx" },
+  "tab-icon": { node: <TabIconDemo />, src: "tab/icon.tsx" },
 } as const;
 
 export type DemoName = keyof typeof demos;
