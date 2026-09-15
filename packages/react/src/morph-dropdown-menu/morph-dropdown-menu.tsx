@@ -3,7 +3,7 @@
 import { Menu as Primitive } from "@base-ui/react/menu";
 import { ArrowRight01Icon, Tick02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { eases, springs } from "@poise-ui/motion";
+import { eases, springs, type Spring } from "@poise-ui/motion";
 import { cn } from "@poise-ui/shared";
 import { motion } from "motion/react";
 import * as React from "react";
@@ -81,6 +81,41 @@ function collapsedPose(
   }
 }
 
+/**
+ * Fades the popup out while the card collapses, and holds Base UI off until the
+ * fade is done.
+ *
+ * Base UI unmounts a menu popup as soon as the animations on the popup element
+ * itself have finished. Handing `Menu.Root` an `actionsRef` does not stop that
+ * the way it does for `Select`, and the collapse is a JS spring, which
+ * `getAnimations()` cannot see - so the popup was cut away before it could
+ * shrink. A Web Animation is something Base UI can see. It runs on the curve
+ * the collapse closes on, and because effects run child before parent it is
+ * always registered by the time Base UI looks.
+ */
+function MorphPopupExit({
+  open,
+  popupRef,
+}: {
+  open: boolean;
+  popupRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  React.useEffect(() => {
+    const element = popupRef.current;
+    if (!element || open) return;
+
+    const animation = element.animate([{ opacity: 1 }, { opacity: 0 }], {
+      duration: eases.standard.duration * 1000,
+      easing: `cubic-bezier(${eases.standard.ease.join(",")})`,
+      fill: "forwards",
+    });
+
+    return () => animation.cancel();
+  }, [open, popupRef]);
+
+  return null;
+}
+
 /** Pins the growing card to the edge that faces the anchor. */
 function anchoredEdge(side: MorphSide) {
   switch (side) {
@@ -96,9 +131,10 @@ function anchoredEdge(side: MorphSide) {
 export type MorphDropdownMenuProps = Omit<Primitive.Root.Props, "actionsRef">;
 
 /**
- * Base UI unmounts the popup when a CSS transition on it ends. There is none
- * now, so `actionsRef` turns that off and the popup unmounts itself once the
- * closing spring settles.
+ * `actionsRef` lets the popup unmount itself once the closing animation
+ * settles. Unlike `Select`, `Menu` does not stop its own unmount when the ref
+ * is given, so `MorphPopup` also runs an exit fade for Base UI to wait on -
+ * see `MorphPopupExit`.
  */
 function MorphDropdownMenu(props: MorphDropdownMenuProps) {
   const actionsRef = React.useRef<Primitive.Root.Actions | null>(null);
@@ -144,6 +180,9 @@ type MorphPopupProps = Omit<Primitive.Popup.Props, "className" | "render"> & {
   className?: string;
   /** Names the measured card, so a demo or test can reach for one level. */
   contentSlot: string;
+  /** The spring the card grows on. Submenus open far more often, so they
+   * settle on a tighter one. */
+  openTransition: Spring;
   positionerClassName?: string;
   side?: MorphSide;
   sideOffset?: number;
@@ -159,6 +198,7 @@ function MorphPopup({
   className,
   children,
   contentSlot,
+  openTransition,
   positionerClassName,
   side = "bottom",
   sideOffset = 6,
@@ -166,6 +206,7 @@ function MorphPopup({
 }: MorphPopupProps) {
   const { actionsRef, anchorRef } = useMorphAnchor(contentSlot);
   const contentRef = React.useRef<HTMLDivElement>(null);
+  const popupRef = React.useRef<HTMLDivElement>(null);
   const [naturalSize, setNaturalSize] = React.useState<{
     width: number;
     height: number;
@@ -209,7 +250,7 @@ function MorphPopup({
           className="group/morph pointer-events-none relative outline-none"
           {...props}
           render={(
-            { children: popupChildren, style, ...renderProps },
+            { children: popupChildren, ref, style, ...renderProps },
             state,
           ) => {
             const physicalSide = toPhysicalSide(state.side);
@@ -220,7 +261,12 @@ function MorphPopup({
             );
 
             return (
-              <div {...renderProps} style={{ ...style, ...naturalSize }}>
+              <div
+                {...renderProps}
+                ref={mergeRefs(popupRef, ref)}
+                style={{ ...style, ...naturalSize }}
+              >
+                <MorphPopupExit open={state.open} popupRef={popupRef} />
                 <motion.div
                   className={cn(
                     "border-border bg-bg text-fg pointer-events-auto absolute overflow-hidden rounded-md border shadow-lg",
@@ -235,8 +281,8 @@ function MorphPopup({
                       ? { ...naturalSize, x: 0, y: 0 }
                       : collapsed
                   }
-                  transition={state.open ? springs.smooth : eases.standard}
-                  // Base UI is not watching, so say when the popup can go.
+                  transition={state.open ? openTransition : eases.standard}
+                  // The spring, not the exit fade, decides when it goes.
                   onAnimationComplete={() => {
                     if (!state.open) actionsRef.current?.unmount();
                   }}
@@ -277,11 +323,17 @@ function MorphPopup({
 
 export type MorphDropdownMenuContentProps = Omit<
   MorphPopupProps,
-  "contentSlot"
+  "contentSlot" | "openTransition"
 >;
 
 function MorphDropdownMenuContent(props: MorphDropdownMenuContentProps) {
-  return <MorphPopup contentSlot="morph-dropdown-menu-content" {...props} />;
+  return (
+    <MorphPopup
+      contentSlot="morph-dropdown-menu-content"
+      openTransition={springs.smooth}
+      {...props}
+    />
+  );
 }
 
 export type MorphDropdownMenuSubProps = Omit<
@@ -336,7 +388,7 @@ function MorphDropdownMenuSubTrigger({
 
 export type MorphDropdownMenuSubContentProps = Omit<
   MorphPopupProps,
-  "contentSlot"
+  "contentSlot" | "openTransition"
 >;
 
 function MorphDropdownMenuSubContent({
@@ -347,6 +399,9 @@ function MorphDropdownMenuSubContent({
   return (
     <MorphPopup
       contentSlot="morph-dropdown-menu-sub-content"
+      // A submenu rides the pointer down the list, so it lands rather than
+      // rings the way the menu below the trigger can afford to.
+      openTransition={springs.snappy}
       side={side}
       sideOffset={sideOffset}
       {...props}
