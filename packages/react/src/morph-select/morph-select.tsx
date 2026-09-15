@@ -9,12 +9,10 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { eases, springs } from "@poise-ui/motion";
 import { cn } from "@poise-ui/shared";
-import { motion, type HTMLMotionProps } from "motion/react";
+import { motion } from "motion/react";
 import * as React from "react";
 
 type MorphSide = "top" | "bottom";
-
-const EXPANDED_POSE = { width: "auto", height: "auto", y: 0 } as const;
 
 /** How an item hands itself to the overlay that follows the highlight. */
 const MorphOverlayContext = React.createContext<
@@ -130,14 +128,6 @@ function MorphSelectValue({ className, ...props }: Primitive.Value.Props) {
   );
 }
 
-/**
- * `onAnimationStart` and the drag handlers mean something else on a `motion`
- * element, so the two signatures cannot be reconciled. Base UI never passes
- * them, so assert past the overlap.
- */
-const asMotionProps = (props: React.ComponentProps<"div">) =>
-  props as HTMLMotionProps<"div">;
-
 export type MorphSelectContentProps = Primitive.Popup.Props & {
   side?: MorphSide;
   sideOffset?: number;
@@ -147,6 +137,7 @@ export type MorphSelectContentProps = Primitive.Popup.Props & {
 /**
  * `alignItemWithTrigger` is off because that mode drives the popup's height and
  * position itself.
+
  */
 function MorphSelectContent({
   className,
@@ -157,9 +148,36 @@ function MorphSelectContent({
   ...props
 }: MorphSelectContentProps) {
   const { actionsRef, triggerRef } = useMorphRoot("MorphSelectContent");
-  const popupRef = React.useRef<HTMLDivElement>(null);
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  const [naturalSize, setNaturalSize] = React.useState<{
+    width: number;
+    height: number;
+  }>();
   const [highlightedItem, setHighlightedItem] =
     React.useState<HTMLElement | null>(null);
+
+  const measureContent = React.useCallback((element: HTMLDivElement | null) => {
+    contentRef.current = element;
+    if (!element) return;
+
+    const update = () =>
+      setNaturalSize((current) =>
+        current?.width === element.offsetWidth &&
+        current?.height === element.offsetHeight
+          ? current
+          : { width: element.offsetWidth, height: element.offsetHeight },
+      );
+
+    update();
+
+    const resizeObserver = new ResizeObserver(update);
+    resizeObserver.observe(element);
+
+    return () => {
+      contentRef.current = null;
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   // Measured off the trigger, not off `--anchor-width` / `--anchor-height`:
   // custom properties read back unresolved, and Motion needs a number.
@@ -182,31 +200,43 @@ function MorphSelectContent({
         className={cn("isolate z-40", positionerClassName)}
       >
         <Primitive.Popup
-          className={cn(
-            "group/morph border-border bg-bg text-fg w-max max-w-(--available-width) min-w-(--anchor-width) overflow-hidden rounded-md border shadow-lg",
-            "duration-slower ease-standard transition-shadow",
-            "data-starting-style:shadow-transparent",
-            "data-ending-style:duration-base data-ending-style:shadow-transparent",
-          )}
+          className="group/morph pointer-events-none relative"
           {...props}
-          render={(renderProps, state) => (
-            <motion.div
-              {...asMotionProps(renderProps)}
-              initial={collapsedPose(state.side)}
-              animate={state.open ? EXPANDED_POSE : collapsedPose(state.side)}
-              transition={state.open ? springs.smooth : eases.standard}
-              // Base UI is not watching, so say when the popup can go.
-              onAnimationComplete={() => {
-                if (!state.open) actionsRef.current?.unmount();
-              }}
-            />
+          render={(
+            { children: popupChildren, style, ...renderProps },
+            state,
+          ) => (
+            <div {...renderProps} style={{ ...style, ...naturalSize }}>
+              <motion.div
+                className={cn(
+                  "border-border bg-bg text-fg pointer-events-auto absolute left-0 overflow-hidden rounded-md border shadow-lg",
+                  state.side === "top" ? "bottom-0" : "top-0",
+                  "duration-slower ease-standard transition-shadow",
+                  "group-data-starting-style/morph:shadow-transparent",
+                  "group-data-ending-style/morph:duration-base group-data-ending-style/morph:shadow-transparent",
+                )}
+                initial={collapsedPose(state.side)}
+                animate={
+                  state.open && naturalSize
+                    ? { ...naturalSize, y: 0 }
+                    : collapsedPose(state.side)
+                }
+                transition={state.open ? springs.smooth : eases.standard}
+                // Base UI is not watching, so say when the popup can go.
+                onAnimationComplete={() => {
+                  if (!state.open) actionsRef.current?.unmount();
+                }}
+              >
+                {popupChildren}
+              </motion.div>
+            </div>
           )}
         >
           <div
-            ref={popupRef}
+            ref={measureContent}
             data-slot="morph-select-content"
             className={cn(
-              "relative w-max min-w-full p-1",
+              "relative w-max max-w-(--available-width) min-w-(--anchor-width) p-1",
               "duration-slower ease-standard opacity-100 transition-[filter,opacity]",
               "group-data-starting-style/morph:opacity-0 group-data-starting-style/morph:blur-sm",
               "group-data-ending-style/morph:filter-sm group-data-ending-style/morph:opacity-0",
@@ -215,8 +245,9 @@ function MorphSelectContent({
             )}
           >
             <MorphSelectScrollUpButton />
+
             <MorphSelectItemOverlay
-              popupRef={popupRef}
+              popupRef={contentRef}
               item={highlightedItem}
               className="bg-muted"
             />
@@ -228,6 +259,7 @@ function MorphSelectContent({
                 {children}
               </Primitive.List>
             </MorphOverlayContext.Provider>
+
             <MorphSelectScrollDownButton />
           </div>
         </Primitive.Popup>
@@ -412,8 +444,7 @@ function MorphSelectScrollUpButton({
     <Primitive.ScrollUpArrow
       data-slot="morph-select-scroll-up-button"
       className={cn(
-        "text-muted-fg bg-bg top-0 z-20 flex w-full cursor-default items-center justify-center",
-        "[&_svg]:size-4",
+        "text-muted-fg bg-bg top-0 z-20 flex w-full cursor-default items-center justify-center [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
       {...props}
@@ -431,8 +462,7 @@ function MorphSelectScrollDownButton({
     <Primitive.ScrollDownArrow
       data-slot="morph-select-scroll-down-button"
       className={cn(
-        "text-muted-fg bg-bg bottom-0 z-20 flex w-full cursor-default items-center justify-center",
-        "[&_svg]:size-4",
+        "text-muted-fg bg-bg bottom-0 z-20 flex w-full cursor-default items-center justify-center [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
       {...props}
