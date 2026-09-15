@@ -10,6 +10,7 @@ import { MorphAccordionDemo } from "@/components/demos/morph-accordion/default";
 import { MorphAccordionDepthDemo } from "@/components/demos/morph-accordion/depth";
 import { MorphAccordionGapDemo } from "@/components/demos/morph-accordion/gap";
 import { MorphAccordionNoBorderDemo } from "@/components/demos/morph-accordion/no-border";
+import { MorphDropdownMenuDemo } from "@/components/demos/morph-dropdown-menu/default";
 import { MorphSelectDemo } from "@/components/demos/morph-select/default";
 import { MorphSelectGroupsDemo } from "@/components/demos/morph-select/groups";
 import { MorphSelectScrollDemo } from "@/components/demos/morph-select/scroll";
@@ -80,6 +81,10 @@ const demos = {
   "liquid-tab-icon-end": {
     node: <LiquidTabIconEndDemo />,
     src: "liquid-tab/icon-end.tsx",
+  },
+  "morph-dropdown-menu": {
+    node: <MorphDropdownMenuDemo />,
+    src: "morph-dropdown-menu/default.tsx",
   },
   "morph-select": {
     node: <MorphSelectDemo />,

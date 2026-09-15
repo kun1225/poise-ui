@@ -1,0 +1,84 @@
+---
+title: Morph Dropdown Menu
+description: A dropdown menu whose panel grows out from behind the trigger and welds itself to the edge it came from.
+---
+
+<ComponentPreview name="morph-dropdown-menu" />
+
+## Usage
+
+```tsx
+import {
+  MorphDropdownMenu,
+  MorphDropdownMenuContent,
+  MorphDropdownMenuItem,
+  MorphDropdownMenuTrigger,
+} from "@/components/ui/morph-dropdown-menu";
+
+<MorphDropdownMenu>
+  <MorphDropdownMenuTrigger>Open menu</MorphDropdownMenuTrigger>
+  <MorphDropdownMenuContent>
+    <MorphDropdownMenuItem>Profile</MorphDropdownMenuItem>
+    <MorphDropdownMenuItem>Settings</MorphDropdownMenuItem>
+  </MorphDropdownMenuContent>
+</MorphDropdownMenu>;
+```
+
+## Options
+
+Added props:
+
+| Component                     | Prop                  | Default     | Effect                                               |
+| ----------------------------- | --------------------- | ----------- | ---------------------------------------------------- |
+| `MorphDropdownMenuContent`    | `side`                | `"bottom"`  | Which edge of the trigger the panel grows from.      |
+| `MorphDropdownMenuContent`    | `sideOffset`          | `6`         | Pixels the panel comes to rest clear of the trigger. |
+| `MorphDropdownMenuContent`    | `positionerClassName` | —           | Classes for the positioner, which owns z-index.      |
+| `MorphDropdownMenuSubContent` | `side`                | `"right"`   | Which edge of the sub trigger the panel grows from.  |
+| `MorphDropdownMenuSubContent` | `sideOffset`          | `4`         | Pixels the sub panel rests clear of its trigger.     |
+| `MorphDropdownMenuItem`       | `variant`             | `"default"` | `"danger"` paints the item in the danger color.      |
+
+### side
+
+Controls which edge the panel grows from.
+The panel flips when space is limited.
+
+### sideOffset
+
+Controls the final distance from the trigger.
+Set it to `0` to keep both edges joined.
+
+### positionerClassName
+
+Sets classes on the positioner.
+Use it for z-index changes.
+
+```tsx
+<MorphDropdownMenuContent positionerClassName="z-100">
+```
+
+## Anatomy
+
+```tsx
+<MorphDropdownMenu>
+  <MorphDropdownMenuTrigger />
+  <MorphDropdownMenuContent>
+    <MorphDropdownMenuGroup>
+      <MorphDropdownMenuGroupLabel />
+      <MorphDropdownMenuItem>
+        <MorphDropdownMenuShortcut />
+      </MorphDropdownMenuItem>
+    </MorphDropdownMenuGroup>
+    <MorphDropdownMenuSeparator />
+    <MorphDropdownMenuCheckboxItem />
+    <MorphDropdownMenuRadioGroup>
+      <MorphDropdownMenuRadioItem />
+    </MorphDropdownMenuRadioGroup>
+    <MorphDropdownMenuSub>
+      <MorphDropdownMenuSubTrigger />
+      <MorphDropdownMenuSubContent>
+        <MorphDropdownMenuItem />
+      </MorphDropdownMenuSubContent>
+    </MorphDropdownMenuSub>
+  </MorphDropdownMenuContent>
+</MorphDropdownMenu>
+```
